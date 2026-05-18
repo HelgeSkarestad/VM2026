@@ -1,0 +1,107 @@
+---
+title: "VM-tuppekunkurranse – Resultater"
+author: "Automatisk generert"
+format:
+  html:
+    toc: true
+    number-sections: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+## Innledning
+
+Denne rapporten viser resultatene fra VM-tuppekunkurransen.
+Poeng er beregnet ved å sammenligne hvert tips mot **fasit-raden**
+(`Navn = fasit`) i Excel-filen.
+
+---
+
+## Datagrunnlag
+
+```{r dataprep, include=FALSE}
+library(readxl)
+library(dplyr)
+library(stringr)
+library(ggplot2)
+library(tidyverse)
+
+# Les data
+df <- read_excel(here::here("data/eksempel.xlsx"))
+
+fasit <- df %>%
+  filter(str_to_lower(Navn) == "fasit") %>%
+  slice(1)
+
+
+# Finn spørsmålskolonner
+spm_cols <- setdiff(names(df), c("Id", "Navn"))
+
+# Hent poengvekter fra kolonnenavn
+weights <- tibble(
+  kolonne = spm_cols,
+  poeng = as.numeric(str_extract(spm_cols, "\\d+"))
+)
+
+
+
+# Filtrer bort fasit
+deltakere <- df %>%
+  filter(str_to_lower(Navn) != "fasit")
+
+# Beregn poeng per spørsmål
+poeng_df <- deltakere
+
+for (i in seq_len(nrow(weights))) {
+  col <- weights$kolonne[i]
+  w   <- weights$poeng[i]
+
+  poeng_df[[paste0(col, "_poeng")]] <-
+    ifelse(
+      str_to_lower(trimws(poeng_df[[col]])) ==
+        str_to_lower(trimws(fasit[[col]])),
+      w,
+      0
+    )
+}
+
+# Total poengsum
+poeng_df <- poeng_df %>%
+  mutate(
+    Total = rowSums(select(., ends_with("_poeng")))
+  )
+
+# poeng_df
+
+
+leaderboard <- poeng_df %>%
+  select(Navn, Total) %>%
+  arrange(desc(Total))
+
+# leaderboard
+
+```
+
+```{r leder}
+ggplot(leaderboard, aes(x = reorder(Navn, Total), y = Total)) +
+  geom_col(fill = "#2C7FB8") +
+  coord_flip() +
+  labs(
+    title = "Leaderboard – VM-tipping",
+    x = NULL,
+    y = "Poeng"
+  ) +
+  geom_text(aes(label = Total), hjust = -0.2) +
+  theme_minimal()
+
+
+# 
+# poeng_df %>%
+#   select(Navn, ends_with("_poeng"))
+  
+```
+
+
+
