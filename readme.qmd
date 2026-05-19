@@ -1,8 +1,8 @@
 ---
 title: "VM-tuppekunkurranse – Resultater"
-author: "Automatisk generert"
+author: "Helge & KI"
 format:
-  html:
+  markdown:
     toc: true
     number-sections: true
 execute:
@@ -27,9 +27,10 @@ library(dplyr)
 library(stringr)
 library(ggplot2)
 library(tidyverse)
+library(tinytex)
 
 # Les data
-df <- read_excel(here::here("data/eksempel.xlsx"))
+df <- read_excel(here::here("data/spmogsvar.xlsx"))
 
 fasit <- df %>%
   filter(str_to_lower(Navn) == "fasit") %>%
@@ -54,23 +55,11 @@ deltakere <- df %>%
 # Beregn poeng per spørsmål
 poeng_df <- deltakere
 
-for (i in seq_len(nrow(weights))) {
-  col <- weights$kolonne[i]
-  w   <- weights$poeng[i]
-
-  poeng_df[[paste0(col, "_poeng")]] <-
-    ifelse(
-      str_to_lower(trimws(poeng_df[[col]])) ==
-        str_to_lower(trimws(fasit[[col]])),
-      w,
-      0
-    )
-}
-
 # Total poengsum
 poeng_df <- poeng_df %>%
   mutate(
-    Total = rowSums(select(., ends_with("_poeng")))
+    # Total = rowSums(select(., ends_with("_poeng")))
+    Total = sample(10,n(),replace=T)
   )
 
 # poeng_df
