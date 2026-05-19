@@ -6,22 +6,24 @@ format:
     toc: true
     number-sections: true
 execute:
-  echo: true
+  echo: false
   warning: false
   message: false
 ---
 
 ## Innledning
 
-Denne rapporten viser resultatene fra VM-tuppekunkurransen.
-Poeng er beregnet ved å sammenligne hvert tips mot **fasit-raden**
-(`Navn = fasit`) i Excel-filen.
+![](bilder/lagbilde.jpg)
 
----
+Denne rapporten viser resultatene fra VM-tuppekunkurransen.
+Det fins script for å tolka excel-tabellen.
+
+
 
 ## Datagrunnlag
+Her komme det sylskarpe analyser av svarene som e sendt inn
 
-```{r dataprep, include=FALSE}
+```{r dataprep}
 library(readxl)
 library(dplyr)
 library(stringr)
@@ -73,12 +75,19 @@ leaderboard <- poeng_df %>%
 
 ```
 
+
+## Poeng som allerede e delt ud
+
+![](bilder/ebh.jpg)
+
+Her komme info om poeng som allerede e delt ud. Typisk itte innledande runder.
+
 ```{r leder}
 ggplot(leaderboard, aes(x = reorder(Navn, Total), y = Total)) +
   geom_col(fill = "#2C7FB8") +
   coord_flip() +
   labs(
-    title = "Leaderboard – VM-tipping",
+    title = "Rangering deltakere – VM-tipping",
     x = NULL,
     y = "Poeng"
   ) +
@@ -91,6 +100,15 @@ ggplot(leaderboard, aes(x = reorder(Navn, Total), y = Total)) +
 #   select(Navn, ends_with("_poeng"))
   
 ```
+
+## Poeng som gjenstår å spela om
+
+
+Her komme info om kordan folk har svart på de spørsmålene som ennå ikkje e delt ud.
+
+
+## Avansert analyse?
+F.eks. ka resultat vil gi størst endring i resultattabellen?
 
 
 

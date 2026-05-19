@@ -21,40 +21,6 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for syntax highlighting */
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
 </style>
 
 
@@ -82,6 +48,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#innledning" id="toc-innledning" class="nav-link active" data-scroll-target="#innledning"><span class="header-section-number">1</span> Innledning</a></li>
   <li><a href="#datagrunnlag" id="toc-datagrunnlag" class="nav-link" data-scroll-target="#datagrunnlag"><span class="header-section-number">2</span> Datagrunnlag</a></li>
+  <li><a href="#poeng-som-allerede-e-delt-ud" id="toc-poeng-som-allerede-e-delt-ud" class="nav-link" data-scroll-target="#poeng-som-allerede-e-delt-ud"><span class="header-section-number">3</span> Poeng som allerede e delt ud</a></li>
+  <li><a href="#poeng-som-gjenstår-å-spela-om" id="toc-poeng-som-gjenstår-å-spela-om" class="nav-link" data-scroll-target="#poeng-som-gjenstår-å-spela-om"><span class="header-section-number">4</span> Poeng som gjenstår å spela om</a></li>
+  <li><a href="#avansert-analyse" id="toc-avansert-analyse" class="nav-link" data-scroll-target="#avansert-analyse"><span class="header-section-number">5</span> Avansert analyse?</a></li>
   </ul>
 </nav>
 </div>
@@ -114,22 +83,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="innledning" class="level2" data-number="1">
 <h2 data-number="1" class="anchored" data-anchor-id="innledning"><span class="header-section-number">1</span> Innledning</h2>
-<p>Denne rapporten viser resultatene fra VM-tuppekunkurransen. Poeng er beregnet ved å sammenligne hvert tips mot <strong>fasit-raden</strong> (<code>Navn = fasit</code>) i Excel-filen.</p>
-<hr>
+<p><img src="bilder/lagbilde.jpg" class="img-fluid"></p>
+<p>Denne rapporten viser resultatene fra VM-tuppekunkurransen. Det fins script for å tolka excel-tabellen.</p>
 </section>
 <section id="datagrunnlag" class="level2" data-number="2">
 <h2 data-number="2" class="anchored" data-anchor-id="datagrunnlag"><span class="header-section-number">2</span> Datagrunnlag</h2>
+<p>Her komme det sylskarpe analyser av svarene som e sendt inn</p>
+</section>
+<section id="poeng-som-allerede-e-delt-ud" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="poeng-som-allerede-e-delt-ud"><span class="header-section-number">3</span> Poeng som allerede e delt ud</h2>
+<p><img src="bilder/ebh.jpg" class="img-fluid"></p>
+<p>Her komme info om poeng som allerede e delt ud. Typisk itte innledande runder.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(leaderboard, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">reorder</span>(Navn, Total), <span class="at">y =</span> Total)) <span class="sc">+</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">fill =</span> <span class="st">"#2C7FB8"</span>) <span class="sc">+</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_flip</span>() <span class="sc">+</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Leaderboard – VM-tipping"</span>,</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="cn">NULL</span>,</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Poeng"</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> Total), <span class="at">hjust =</span> <span class="sc">-</span><span class="fl">0.2</span>) <span class="sc">+</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -137,10 +102,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </figure>
 </div>
 </div>
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># poeng_df %&gt;%</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">#   select(Navn, ends_with("_poeng"))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+</section>
+<section id="poeng-som-gjenstår-å-spela-om" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="poeng-som-gjenstår-å-spela-om"><span class="header-section-number">4</span> Poeng som gjenstår å spela om</h2>
+<p>Her komme info om kordan folk har svart på de spørsmålene som ennå ikkje e delt ud.</p>
+</section>
+<section id="avansert-analyse" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="avansert-analyse"><span class="header-section-number">5</span> Avansert analyse?</h2>
+<p>F.eks. ka resultat vil gi størst endring i resultattabellen?</p>
 </section>
 
 </main>
