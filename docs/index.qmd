@@ -2,7 +2,7 @@
 title: "VM-tuppekunkurranse – Resultater"
 author: "Helge & KI"
 format:
-  markdown:
+  html:
     toc: true
     number-sections: true
 execute:
