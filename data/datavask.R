@@ -5,7 +5,7 @@ library(tidyr)
 library(janitor)
 
 
-raw <- read_excel("data/spmogsvar.xlsx") |> 
+raw <- read_excel(here::here("data/spmogsvar.xlsx")) |> 
   clean_names()
 
 meta_cols <- names(raw)[1:5]
@@ -187,108 +187,29 @@ alle_svar <- raw |> select(all_of(meta_cols)) |> filter(!is.na(id)) |>
   left_join(finaler_svar, by = join_by(id)) |> 
   left_join(toppsc_svar, by = join_by(id)) |> 
   left_join(vinner_svar, by = join_by(id)) 
-s
+
 alle_spm <- rbind(sant_usant_spm,
-      toppsc_gruppe_spm,
-      rangering_spm,
-      kvartfinaler_spm,
-      lengst_duell_spm,
-      finaler_spm,
-      toppsc_spm,
-      vinner_spm)
+                  toppsc_gruppe_spm,
+                  rangering_spm,
+                  kvartfinaler_spm,
+                  lengst_duell_spm,
+                  finaler_spm,
+                  toppsc_spm,
+                  vinner_spm)
 
-alle_spm |> View()
-  left_join(alle_s)
-cat(
-paste0("'",
-       alle_svar |> slice(1) |> select(starts_with("Q")) |> colnames(),
-       "','",
-      alle_svar |> slice(1) |> select(starts_with("Q")) |> t() |> as.character(),
-       "',\n"
-)
-)
 
-tibble(spm = alle_svar |> slice(1) |> select(starts_with("Q")) |> colnames(),
-      alle_svar |> slice(1) |> select(starts_with("Q")) |> t() |> as.character(),
 
-tribble('Q1','Ja',
-        'Q2','Ja',
-        'Q3','Ja',
-        'Q4','Ja',
-        'Q5','Ja',
-        'Q6','Ja',
-        'Q7','Ja',
-        'Q8','England',
-        'Q9.1','Mexico',
-        'Q9.2','Sør-Korea',
-        'Q9.3','Sør-Afrika',
-        'Q9.4','Tsjekkia',
-        'Q10.1','Canada',
-        'Q10.2','Qatar',
-        'Q10.3','Bosnia-Hercegovina',
-        'Q10.4','Sveits',
-        'Q11.1','Marokko',
-        'Q11.2','Skottland',
-        'Q11.3','Brasil',
-        'Q11.4','Haiti',
-        'Q12.1','USA',
-        'Q12.2','Australia',
-        'Q12.3','Paraguay',
-        'Q12.4','Tyrkia',
-        'Q13.1','Curaçao',
-        'Q13.2','Elfenbenskysten',
-        'Q13.3','Tyskland',
-        'Q13.4','Ecuador',
-        'Q14.1','Nederland',
-        'Q14.2','Sverige',
-        'Q14.3','Japan',
-        'Q14.4','Tunisia',
-        'Q15.1','Belgia',
-        'Q15.2','Iran',
-        'Q15.3','Egypt',
-        'Q15.4','New Zealand',
-        'Q16.1','Spania',
-        'Q16.2','Saudi-Arabia',
-        'Q16.3','Kapp Verde',
-        'Q16.4','Uruguay',
-        'Q17.1','Frankrike',
-        'Q17.2','Irak',
-        'Q17.3','Senegal',
-        'Q17.4','Norge',
-        'Q18.1','Algerie',
-        'Q18.2','Argentina',
-        'Q18.3','Østerrike',
-        'Q18.4','Jordan',
-        'Q19.1','DR Kongo',
-        'Q19.2','Portugal',
-        'Q19.3','Usbekistan',
-        'Q19.4','Colombia',
-        'Q20.1','Kroatia',
-        'Q20.2','England',
-        'Q20.3','Ghana',
-        'Q20.4','Panama',
-        'Q21','Frankrike;Norge;',
-        'Q22','Første lag',
-        'Q23','Første lag',
-        'Q24','Siste lag',
-        'Q25','Første lag',
-        'Q26','Første lag',
-        'Q27','Første lag',
-        'Q28','Ja',
-        'Q29','Nei',
-        'Q30','Ja',
-        'Q31','Nei',
-        'Q32','Ja',
-        'Q33','Ja',
-        'Q34','Nei',
-        'Q35','Ja',
-        'Q36','Nei',
-        'Q37','Ja',
-        'Q38','Kylian Mbappe',
-        'Q39','Erling Braut Haaland',
-        'Q40','Lionel Messi',
-        'Q41','Lamine Yamal',
-        'Q42','Harry Kane',
-        'Q43','Christiano Ronaldo',
-        'Q44','Vinicius Jr',
-        'Q45','Australia',)
+
+svarskjema <- as_tibble(t(alle_svar))
+svarskjema$spm <- colnames(alle_svar)
+colnames(svarskjema) <- svarskjema[which(svarskjema$spm=="navn"),] |> as.character()
+svarskjema <- svarskjema |> rename(spm=navn)
+
+
+alle_spm <- alle_spm |> 
+  left_join(svarskjema, by = join_by(spm))
+
+
+
+
+       
