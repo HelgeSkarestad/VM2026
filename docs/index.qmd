@@ -27,11 +27,112 @@ Det fins script for å tolka excel-tabellen.
 Her komme det sylskarpe analyser av svarene som e sendt inn
 
 ```{r dataprep}
+library(ggplot2)
 source(here::here("data/datavask.R"))
+```
+
+### Vanligste svar
+
+```{r vanlig}
+
+
+alle_svar |> 
+  filter(id!="Fasit",
+         # spm %in% c("Q1","Q2","Q3")
+         ) |> 
+  left_join(alle_spm,
+            by = join_by(spm)) |> 
+  group_by(spm,tekst,svar) |> 
+  summarise(Antall = n()) |> 
+  summarise(std = sd(Antall)) |> 
+  arrange(-std)
 
 
 
+alle_svar |> 
+  filter(id!="Fasit",
+         spm %in% c("Q11","Q2","Q3")
+         ) |> 
+  left_join(alle_spm,
+            by = join_by(spm)) |> 
+  group_by(spm,tekst,svar) |> 
+  summarise(Antall = n()) |> 
+  ggplot(aes(x=tekst)) +
+  geom_bar(aes(y=Antall,fill=svar), stat="identity")
+```
 
+
+### Irak-kampen
+
+```{r irak_maal}
+
+
+alle_spm |> 
+  filter(spm %in% c("Q9","Q10")) |> 
+  left_join(alle_svar |> filter(id!="Fasit"),by=join_by(spm)) |> 
+  left_join(metadata |>  select(id, autograf)) |> 
+  # group_by(spm, tekst, svar) |> 
+  # summarise(autograf = paste0(autograf,sep=", ")) |> 
+  ggplot(aes(x=tekst)) +
+  geom_label(aes(y=svar, label = autograf),
+             position = position_jitter(width = 0.2, height = 0.2)
+             ) +
+  xlab("") + ylab("") +
+  theme_minimal()
+```
+
+
+
+```{r irak_innbytter}
+
+
+alle_spm |> 
+  filter(spm %in% c("Q11")) |> 
+  left_join(alle_svar |> filter(id!="Fasit"),by=join_by(spm)) |> 
+  left_join(metadata |>  select(id, autograf)) |> 
+  # group_by(spm, tekst, svar) |> 
+  # summarise(autograf = paste0(autograf,sep=", ")) |> 
+  ggplot(aes(x=tekst)) +
+  geom_label(aes(y=svar, label = autograf),
+             position = position_jitter(width = 0.2, height = 0.2)
+             ) +
+  xlab("") + ylab("") +
+  theme_minimal()
+```
+
+
+
+```{r irak_cornere}
+
+alle_spm |> 
+  filter(spm %in% c("Q12","Q13")) |> 
+  left_join(alle_svar |> filter(id!="Fasit"),by=join_by(spm)) |> 
+  left_join(metadata |>  select(id, autograf)) |> 
+  # group_by(spm, tekst, svar) |> 
+  # summarise(autograf = paste0(autograf,sep=", ")) |> 
+  ggplot(aes(x=tekst)) +
+  geom_label(aes(y=svar, label = autograf),
+             position = position_jitter(width = 0.2, height = 0.2)
+             ) +
+  xlab("") + ylab("") +
+  theme_minimal()
+```
+
+
+```{r irak_kort}
+
+alle_spm |> 
+  filter(spm %in% c("Q14","Q15")) |> 
+  left_join(alle_svar |> filter(id!="Fasit"),by=join_by(spm)) |> 
+  left_join(metadata |>  select(id, autograf)) |> 
+  # group_by(spm, tekst, svar) |> 
+  # summarise(autograf = paste0(autograf,sep=", ")) |> 
+  ggplot(aes(x=tekst)) +
+  geom_label(aes(y=svar, label = autograf),
+             position = position_jitter(width = 0.2, height = 0.2)
+             ) +
+  xlab("") + ylab("") +
+  theme_minimal()
 ```
 
 

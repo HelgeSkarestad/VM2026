@@ -5,60 +5,101 @@ library(tidyr)
 library(janitor)
 
 
-raw <- read_excel(here::here("data/spmogsvar.xlsx")) |> 
-  clean_names()
+# raw <- read_excel(here::here("data/spmogsvar.xlsx")) |>  clean_names()
+raw <- read_excel(here::here("data/260608-spmogsvar.xlsx")) |>  clean_names()
 
-meta_cols <- names(raw)[1:5]
-sant_usant <- names(raw)[6:12]
-toppscorer_gruppe <- names(raw)[13:13]
-rangering <- names(raw)[14:25]
-kvartfinaler <- names(raw)[26]
-lengst_duell <- names(raw)[27:32]
-finaler <- names(raw)[33:42]
-toppscorer <- names(raw)[43]
-vinner <- names(raw)[44]
+meta_cols <- names(raw)[1:8]
+smaaspoersmaal <- names(raw)[9:16]
+irak <- names(raw)[17:23]
+senegal <- names(raw)[24:30]
+frankrike <- names(raw)[31:37]
+joker <- names(raw)[38]
+grupper <- names(raw)[39:50]
+naar_ryker <- names(raw)[51:57]
+finale <- names(raw)[58:66]
+avslutning <- names(raw)[67:72]
 
 #### Tipping gruppespill ####
-sant_usant_ind <- seq(1, length(sant_usant))
-sant_usant_poeng <- rep(1,length(sant_usant))
-sant_usant_spm <- raw |> 
-  slice(3) |> 
-  select(all_of(sant_usant)) |> 
-  mutate(across(everything(),~substr(.,27,nchar(.)))) |> 
-  as.character()
-sant_usant_svar <- raw |> 
+smaaspoersmaal_ind <- seq(1, length(smaaspoersmaal))
+smaaspoersmaal_poeng <- c(rep(1,7),2)
+smaaspoersmaal_spm <- smaaspoersmaal
+
+smaaspoersmaal_svar <- raw |> 
   filter(!is.na(id)) |> 
-  select(id,all_of(sant_usant))
+  select(id,all_of(smaaspoersmaal))
 
-sant_usant_spm <- tibble(spm = paste0("Q",sant_usant_ind),
-                         tekst = sant_usant_spm,
-                         poeng = sant_usant_poeng)
-colnames(sant_usant_svar)[2:ncol(sant_usant_svar)] <- sant_usant_spm$spm
+smaaspoersmaal_spm <- tibble(spm = paste0("Q",smaaspoersmaal_ind),
+                             tekst = smaaspoersmaal_spm,
+                             poeng = smaaspoersmaal_poeng)
+colnames(smaaspoersmaal_svar)[2:ncol(smaaspoersmaal_svar)] <- smaaspoersmaal_spm$spm
 
-#### Toppscorer gruppespill ####
+#### Irakkampen ####
 
-toppsc_gruppe_ind <- max(sant_usant_ind) + 1
-toppsc_gruppe_poeng <- 2
-toppsc_gruppe_spm <- raw |> 
-  select(all_of(toppscorer_gruppe)) |> 
-  slice(1) |> 
-  as.character()
-toppsc_gruppe_svar <- raw |> 
+irak_ind <- max(smaaspoersmaal_ind) + 1:length(irak)
+irak_poeng <- c(1,1,2,2,2,2,2)
+irak_spm <- irak
+irak_svar <- raw |> 
   filter(!is.na(id)) |> 
-  select(id,all_of(toppscorer_gruppe))
+  select(id,all_of(irak))
 
-toppsc_gruppe_spm <- tibble(spm = paste0("Q",toppsc_gruppe_ind),
-                            tekst = toppsc_gruppe_spm,
-                            poeng = toppsc_gruppe_poeng)
-colnames(toppsc_gruppe_svar)[2:ncol(toppsc_gruppe_svar)] <- toppsc_gruppe_spm$spm
+irak_spm <- tibble(spm = paste0("Q",irak_ind),
+                   tekst = irak_spm,
+                   poeng = irak_poeng)
+colnames(irak_svar)[2:ncol(irak_svar)] <- irak_spm$spm
 
-#### Rangering puljer ####
+#### Senegal ####
 
-rangering_spm <- raw |> 
+senegal_ind <- max(irak_ind) + 1:length(senegal)
+senegal_poeng <- c(1,1,2,2,2,2,2)
+senegal_spm <- senegal
+senegal_svar <- raw |> 
   filter(!is.na(id)) |> 
-  select(id,all_of(rangering)) |>
+  select(id,all_of(senegal))
+
+senegal_spm <- tibble(spm = paste0("Q",senegal_ind),
+                      tekst = senegal_spm,
+                      poeng = senegal_poeng)
+colnames(senegal_svar)[2:ncol(senegal_svar)] <- senegal_spm$spm
+
+
+
+#### Frankrike ####
+
+frankrike_ind <- max(senegal_ind) + 1:length(frankrike)
+frankrike_poeng <- c(1,1,2,2,2,2,2)
+frankrike_spm <- frankrike
+frankrike_svar <- raw |> 
+  filter(!is.na(id)) |> 
+  select(id,all_of(frankrike))
+
+frankrike_spm <- tibble(spm = paste0("Q",frankrike_ind),
+                        tekst = frankrike_spm,
+                        poeng = frankrike_poeng)
+colnames(frankrike_svar)[2:ncol(frankrike_svar)] <- frankrike_spm$spm
+
+
+
+#### Jokerspm ####
+
+joker_ind <- max(frankrike_ind) + 1:length(joker)
+joker_poeng <- c(0)
+joker_spm <- joker
+joker_svar <- raw |> 
+  filter(!is.na(id)) |> 
+  select(id,all_of(joker))
+
+joker_spm <- tibble(spm = paste0("Q",joker_ind),
+                    tekst = joker_spm,
+                    poeng = joker_poeng)
+colnames(joker_svar)[2:ncol(joker_svar)] <- joker_spm$spm
+
+
+
+#### Gruppesortering ####
+grupper_spm <- raw |> 
+  select(id,all_of(grupper)) |> 
   rename_with(~LETTERS[1:12],
-              all_of(rangering)) |> 
+              all_of(grupper)) |> 
   pivot_longer(
     cols = LETTERS[1:12],
     names_to = "question_id",
@@ -69,27 +110,27 @@ rangering_spm <- raw |>
     into = c("first", "second", "third", "fourth"),
     sep = ";",
     remove = FALSE
-  ) |>
+  )  |>
   mutate(across(c(first, second, third, fourth), str_trim)) |>
   pivot_longer(
     cols = c(first, second, third, fourth),
     names_to = "position",
     values_to = "team"
-  ) |>
+  )|>
   mutate(
     spm = case_match(question_id,
-                     "A" ~ toppsc_gruppe_ind + 1,
-                     "B" ~ toppsc_gruppe_ind + 2,
-                     "C" ~ toppsc_gruppe_ind + 3,
-                     "D" ~ toppsc_gruppe_ind + 4,
-                     "E" ~ toppsc_gruppe_ind + 5,
-                     "F" ~ toppsc_gruppe_ind + 6,
-                     "G" ~ toppsc_gruppe_ind + 7,
-                     "H" ~ toppsc_gruppe_ind + 8,
-                     "I" ~ toppsc_gruppe_ind + 9,
-                     "J" ~ toppsc_gruppe_ind + 10,
-                     "K" ~ toppsc_gruppe_ind + 11,
-                     "L" ~ toppsc_gruppe_ind + 12
+                     "A" ~ joker_ind + 1,
+                     "B" ~ joker_ind + 2,
+                     "C" ~ joker_ind + 3,
+                     "D" ~ joker_ind + 4,
+                     "E" ~ joker_ind + 5,
+                     "F" ~ joker_ind + 6,
+                     "G" ~ joker_ind + 7,
+                     "H" ~ joker_ind + 8,
+                     "I" ~ joker_ind + 9,
+                     "J" ~ joker_ind + 10,
+                     "K" ~ joker_ind + 11,
+                     "L" ~ joker_ind + 12
     ),
     delspm = case_match(position,
                         "first" ~ paste0("Q",spm,".1"),
@@ -105,111 +146,110 @@ rangering_spm <- raw |>
   )
 
 
-rangering_svar <- rangering_spm |> 
+
+
+grupper_svar <- grupper_spm |> 
   select(id,delspm, team) |> 
   pivot_wider(names_from = delspm, values_from=team)
 
-rangering_spm <- rangering_spm |> 
+grupper_spm <- grupper_spm |> 
   select(spm=delspm,
-         tekst = position,
-         poeng = 1)
+         tekst = position) |> 
+  mutate(poeng = 1)
 
-#### Kvartfinalelag ####
-kvartfinaler_spm <- tibble(spm = "Q21",
-                           tekst = raw |> select(all_of(kvartfinaler)) |> slice(1) |> as.character(),
-                           poeng = 2)
 
-kvartfinaler_svar <- raw |> 
+
+
+#### Når ryker? ####
+
+naar_ryker_spm <- tibble(spm = paste0("Q",43:49),
+                         tekst = naar_ryker,
+                         poeng = 3)
+
+naar_ryker_svar <- raw |> 
   select(id,
-         Q21 = all_of(kvartfinaler)) |> 
-  filter(!is.na(id))
+         all_of(naar_ryker)) |> 
+  filter(!is.na(id)) |> 
+  rename_with(~paste0("Q",43:49),
+              all_of(naar_ryker))
 
-#### Hvem kommer lengst ####
-lengst_duell_spm <- tibble(spm = paste0("Q",22:27),
-                           tekst = paste0(raw |> select(all_of(lengst_duell)) |> slice(1) |> as.character(),
-                                          ", ",
-                                          raw |> select(all_of(lengst_duell)) |> slice(5) |> mutate(across(everything(), ~substr(.,57,nchar(.)))) |> as.character()),
-                           poeng = 2
-)
-lengst_duell_svar <- raw |> 
-  select(id, all_of(lengst_duell)) |> 
-  filter(!is.na(id))
-colnames(lengst_duell_svar) <- c("id",paste0("Q",22:27))
 
 #### finaler ####
-finaler_spm <- tibble(spm = paste0("Q",28:37),
-                      tekst = raw |> 
-                        select(all_of(finaler)) |> 
-                        slice(3) |> 
-                        mutate(across(everything(), ~substr(.,2,nchar(.)))) |> 
-                        as.character(),
-                      poeng = c(rep(1,5),rep(2,5))
-)
-finaler_svar <- raw |> 
-  select(id,all_of(finaler)) |> 
+finale_spm <- tibble(spm = paste0("Q",50:58),
+                     tekst = finale,
+                     poeng = c(5,rep(3,8)))
+
+finale_svar <- raw |> 
+  select(id,all_of(finale)) |> 
   filter(!is.na(id))
-colnames(finaler_svar) <- c("id",paste0("Q",28:37))
+colnames(finale_svar) <- c("id",paste0("Q",50:58))
+
+
 
 #### Toppscorer ####
 
-toppsc_spm <- tibble(spm = paste0("Q",38:44),
-                     tekst = paste("Toppscorer",seq(1,7)),
-                     poeng = 1)
+avslutning_spm <- tibble(spm = paste0("Q",59:64),
+                         tekst = avslutning,
+                         poeng = c(rep(3,5),5))
 
-toppsc_svar <- raw |> 
-  select(id,all_of(toppscorer)) |> 
-  filter(!is.na(id)) |> 
-  separate(
-    toppscorer,
-    into = paste0("Q",38:44),
-    sep = ";",
-    remove = FALSE
-  ) |> 
-  select(id, starts_with("Q"))
+avslutning_svar <- raw |> 
+  select(id,all_of(avslutning)) |> 
+  filter(!is.na(id)) 
+colnames(avslutning_svar) <- c("id",paste0("Q",59:64))
 
-#### Vinner ####
-vinner_spm <- tibble(spm="Q45",
-                     tekst="Hvem vinner VM?",
-                     poeng = 10)
-
-vinner_svar <- raw |> 
-  select(id, all_of(vinner)) |> 
-  filter(!is.na(id))
-colnames(vinner_svar) <- c("id","Q45")
 
 #### Samlet data #### 
-alle_svar <- raw |> select(all_of(meta_cols)) |> filter(!is.na(id)) |> 
-  left_join(sant_usant_svar, by = join_by(id)) |> 
-  left_join(toppsc_gruppe_svar, by = join_by(id)) |> 
-  left_join(rangering_svar, by = join_by(id)) |> 
-  left_join(kvartfinaler_svar, by = join_by(id)) |> 
-  left_join(lengst_duell_svar, by = join_by(id)) |> 
-  left_join(finaler_svar, by = join_by(id)) |> 
-  left_join(toppsc_svar, by = join_by(id)) |> 
-  left_join(vinner_svar, by = join_by(id)) 
+metadata <- raw |> select(all_of(meta_cols)) |> filter(!is.na(id))
 
-alle_spm <- rbind(sant_usant_spm,
-                  toppsc_gruppe_spm,
-                  rangering_spm,
-                  kvartfinaler_spm,
-                  lengst_duell_spm,
-                  finaler_spm,
-                  toppsc_spm,
-                  vinner_spm)
+alle_svar <- smaaspoersmaal_svar |> 
+  left_join(irak_svar, by = join_by(id)) |> 
+  left_join(senegal_svar, by = join_by(id)) |> 
+  left_join(frankrike_svar, by = join_by(id)) |> 
+  left_join(joker_svar, by = join_by(id)) |> 
+  left_join(grupper_svar, by = join_by(id)) |> 
+  left_join(naar_ryker_svar, by = join_by(id)) |> 
+  left_join(finale_svar, by = join_by(id)) |> 
+  left_join(avslutning_svar, by = join_by(id)) |> 
+  pivot_longer(starts_with("Q"), names_to = "spm", values_to="svar")
+
+alle_spm <- rbind(smaaspoersmaal_spm,
+                  irak_spm,
+                  senegal_spm,
+                  frankrike_spm,
+                  joker_spm,
+                  grupper_spm,
+                  naar_ryker_spm,
+                  finale_spm,
+                  avslutning_spm)
+
+rm(list=c("avslutning", "avslutning_spm", "avslutning_svar", 
+          "finale", "finale_spm", "finale_svar", 
+          "frankrike", "frankrike_ind", "frankrike_poeng", "frankrike_spm", "frankrike_svar", 
+          "grupper", "grupper_spm", "grupper_svar", 
+          "irak", "irak_ind", "irak_poeng", "irak_spm", "irak_svar", 
+          "joker", "joker_ind", "joker_poeng", "joker_spm", "joker_svar", 
+          "meta_cols", "raw", 
+          "naar_ryker", "naar_ryker_spm", "naar_ryker_svar", 
+          "senegal", "senegal_ind", "senegal_poeng", "senegal_spm", "senegal_svar", 
+          "smaaspoersmaal", "smaaspoersmaal_ind", "smaaspoersmaal_poeng", "smaaspoersmaal_spm", "smaaspoersmaal_svar"))
 
 
 
-
-svarskjema <- as_tibble(t(alle_svar))
-svarskjema$spm <- colnames(alle_svar)
-colnames(svarskjema) <- svarskjema[which(svarskjema$spm=="navn"),] |> as.character()
-svarskjema <- svarskjema |> rename(spm=navn)
-
-
-alle_spm <- alle_spm |> 
-  left_join(svarskjema, by = join_by(spm))
+#### Telle poeng ####
+alle_spm$tekst <- gsub("_"," ",alle_spm$tekst)
+alle_spm$tekst <- gsub(" riktig svar gir like mange poeng som norge far i gruppespillet","", alle_spm$tekst)
+alle_spm$tekst <- gsub(" riktig svar gir 5 poeng","", alle_spm$tekst)
+alle_spm$tekst <- gsub(" riktig svar gir 3 poeng","", alle_spm$tekst)
+alle_spm$tekst <- gsub(" riktig svar gir 2 poeng","", alle_spm$tekst)
 
 
-
-
-       
+alle_svar |> 
+  filter(id!="Fasit") |> 
+  left_join(alle_svar |> 
+              filter(id=="Fasit") |>  
+              select(-id,
+                     spm,
+                     fasit=svar),
+            by = join_by(spm))
+            
+            
