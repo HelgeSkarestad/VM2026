@@ -12,18 +12,17 @@ execute:
 ---
 
 
-
-## Innledning 
-
 ![](bilder/fifa.jpg)
 
 Denne rapporten viser resultatene fra VM-tuppekunkurransen.
 Utrolig avansert analyse er anvendt for å tolke innsendte tippelapper. 
-Analysene tyter ut i figurer og tabeller i det følgende notatet. 
+Analysene tyter ut i figurer og tabeller i det følgende notatet. Si gjerne
+fra om du har forslag til analyser eller ser feil i dataene.
+
 God lesning!
 
 
-Notatet er oppdatert `r paste0(lubridate::mday(Sys.Date()),". ",c("Juni","Juli")[lubridate::month(Sys.Date())-5]," ",lubridate::year(Sys.Date()))`.
+Notatet er oppdatert `r paste0(lubridate::mday(Sys.Date()),". ",c("juni","juli")[lubridate::month(Sys.Date())-5]," ",lubridate::year(Sys.Date()))`.
 
 
 
@@ -39,40 +38,153 @@ har tippet ulikt få vite det. Den siste kan kanskje generere små bets foran TV
 ```{r dataprep}
 library(ggplot2)
 source(here::here("data/datavask.R"))
-```
-
-### Vanligste svar
-
-```{r vanlig, include=FALSE}
 
 
-alle_svar |> 
-  filter(id!="Fasit",
-         # spm %in% c("Q1","Q2","Q3")
-         ) |> 
-  left_join(alle_spm,
-            by = join_by(spm)) |> 
-  group_by(spm,tekst,svar) |> 
-  summarise(Antall = n()) |> 
-  summarise(std = sd(Antall)) |> 
-  arrange(-std)
+wrap_2_lines <- function(x, width = 40) {
+  vapply(x, function(label) {
+    parts <- strwrap(label, width = width)
+    paste(parts, collapse = "\n")
+  }, character(1))
+}
 
 
-
-alle_svar |> 
-  filter(id!="Fasit",
-         spm %in% c("Q11","Q2","Q3")
-         ) |> 
-  left_join(alle_spm,
-            by = join_by(spm)) |> 
-  group_by(spm,tekst,svar) |> 
-  summarise(Antall = n()) |> 
-  ggplot(aes(x=tekst)) +
-  geom_bar(aes(y=Antall,fill=svar), stat="identity")
 ```
 
 
-### Irak-kampen
+<!-- Vi har fått inn x antall svar -->
+
+
+
+## Innledning
+
+```{r innledning_prepp}
+interessante_spm <- alle_spm |> 
+  filter(spm %in% paste0("Q",c(1:7))) |> 
+  left_join(alle_svar,
+            by = join_by(spm)) |> 
+  filter(id!="Fasit") |> 
+  group_by(spm,svar) |> 
+  summarise(Andel = n()) |> 
+  mutate(Andel = Andel/sum(Andel)) 
+
+ulike_svar <- interessante_spm|> 
+  arrange(Andel) |> 
+  ungroup() |> 
+  distinct(spm) |> 
+  slice(1:2)
+
+like_svar <- interessante_spm|> 
+  arrange(-Andel) |> 
+  ungroup() |> 
+  distinct(spm) |> 
+  slice(1:2)
+```
+
+Er vi enige om noe. Det viser seg at ja, jammen er vi det.
+
+```{r innledning_enighet}
+alle_spm |> 
+  inner_join(like_svar,by = join_by(spm)) |>
+  left_join(alle_svar,
+            by = join_by(spm)) |> 
+  left_join(metadata |> select(id,autograf)) |> 
+  filter(id != "Fasit") |> 
+  ggplot(aes(x=tekst,y=svar)) +
+  geom_label(aes(label = autograf,
+                 col=svar),
+             position = position_jitter(width = 0.3, height = 0.3)) +
+  scale_x_discrete(labels = wrap_2_lines) +
+  xlab("") + ylab("") +
+  theme_minimal() + theme(legend.position="none") +
+  ggtitle(label = "Innledende spørsmål", subtitle = "Spørsmål med størst enighet")
+
+```
+
+Men vi er også uenige om mye.
+
+```{r innledning_uenighet}
+alle_spm |> 
+  inner_join(ulike_svar,by = join_by(spm)) |>
+  left_join(alle_svar,
+            by = join_by(spm)) |> 
+  left_join(metadata |> select(id,autograf)) |> 
+  filter(id != "Fasit") |> 
+  ggplot(aes(x=tekst,y=svar)) +
+  geom_label(aes(label = autograf,
+                 col=svar),
+             position = position_jitter(width = 0.3, height = 0.3)) +
+  scale_x_discrete(labels = wrap_2_lines) +
+  xlab("") + ylab("") +
+  theme_minimal() + theme(legend.position="none") +
+  ggtitle(label = "Innledende spørsmål", subtitle = "Spørsmål med størst uenighet")
+
+```
+
+
+## Gruppespill
+Praksisen med gruppespill i fotball-VM går faktisk helt tilbake til det aller første verdensmesterskapet i 1930.
+
+I VM i Uruguay i 1930 ble lagene delt inn i grupper (round robin), og gruppevinnerne gikk videre til semifinaler.
+
+Men formatet har ikke vært helt likt hele tiden:
+
+- 1934 og 1938: ingen gruppespill – kun utslagsturnering fra start.
+
+- 1950: gruppespillet kom tilbake (og finalen ble faktisk avgjort i en sluttgruppe).
+
+- Fra 1954 og utover: gruppespill + utslagsspill ble standardstrukturen som ligner det vi har i dag. 
+
+
+Dette betyr at ideen om grupper – der lag møtes flere ganger før utslagsrunder – har vært sentral i VM nesten helt siden starten.
+Har det noe å si for vår felles evne til å gjette på lagenes prestasjoner i gruppene?
+
+```{r gruppe_A_L}
+gruppesvar <- alle_spm |> 
+  distinct() |> 
+  # filter(spm %in% paste0("Q",seq(31.0,31.4,0.1))) |>
+  # filter(spm %in% paste0("Q",seq(31.0,34.4,0.1))) |> 
+  filter(spm %in% paste0("Q",seq(31.0,42.4,0.1))) |>
+  left_join(alle_svar, by = join_by(spm)) |> 
+  left_join(metadata |> select(id,autograf), by =join_by(id)) |> 
+  filter(id!="Fasit") |> 
+  mutate(Gruppe = substr(tekst,
+                         nchar(tekst),
+                         nchar(tekst))) |> 
+  group_by(Gruppe, id, autograf) |> 
+  summarise(Rekkefølge = paste0(svar,collapse=", ")) |> 
+  group_by(Gruppe,Rekkefølge) |> 
+  summarise(Antall = n(),
+            Hvem = paste0(autograf,collapse = ", ")) |> 
+  arrange(-Antall)
+```
+De neste tabellene viser et innblikk i grupperesultatene som var mest typiske og
+mest utypiske i tippekupongene. Husk å si fra til de som har tippet mest idiotisk.
+
+```{r gruppe_A_D_mest_vanlig}
+ft1 <- gruppesvar |> 
+  # filter(Gruppe %in% LETTERS[1:12]) |>
+  filter(Gruppe %in% LETTERS[1:4]) |>
+  slice(1) |> 
+  distinct() |> 
+  rename(`Mest vanlig rekkefølge` = Rekkefølge) |> 
+  flextable::flextable()
+ft1 <- flextable::set_table_properties(ft1, layout = "autofit")
+ft1
+
+ft2 <- gruppesvar |> 
+  # filter(Gruppe %in% LETTERS[1:12]) |>
+  filter(Gruppe %in% LETTERS[1:4]) |>
+  slice(n()) |> 
+  distinct() |> 
+  rename(`Mest uvanlige rekkefølge` = Rekkefølge) |> 
+  flextable::flextable()
+ft2 <- flextable::set_table_properties(ft2, layout = "autofit")
+ft2
+```
+
+
+
+## Irak-kampen
 
 Irak er et land i Midtøsten som ligger mellom Iran i øst og Syria og Jordan i vest. Landet har en lang og rik historie som går helt tilbake til oldtiden, da området var kjent som Mesopotamia – ofte omtalt som «sivilisasjonens vugge» fordi noen av verdens første byer, skriftspråk og lover oppsto her. Skriftspråk og lover er to av sivilisasjonens fulltreffere,
 men hvor mange fulltreffere får vi i kampen? 
@@ -87,7 +199,7 @@ alle_spm |>
   ggplot(aes(x=tekst)) +
   geom_label(aes(y=svar, label = autograf, col=svar),
              position = position_jitter(width = 0.2, height = 0.2)
-             ) +
+  ) +
   xlab("") + ylab("") +
   theme_minimal() + theme(legend.position="none") +
   ggtitle(label = "Antall mål Irak-Norge", subtitle = "Saddam mod Jonas")
@@ -107,7 +219,7 @@ alle_spm |>
   ggplot(aes(x=tekst)) +
   geom_label(aes(y=svar, label = autograf, col=svar),
              position = position_jitter(width = 0.2, height = 0.2)
-             ) +
+  ) +
   xlab("") + ylab("") +
   theme_minimal()+ theme(legend.position="none") +
   ggtitle("Fysste innbytter Irak-Norge")
@@ -131,7 +243,7 @@ alle_spm |>
   ggplot(aes(x=tekst)) +
   geom_label(aes(y=svar, label = autograf, col=svar),
              position = position_jitter(width = 0.2, height = 0.2)
-             ) +
+  ) +
   xlab("") + ylab("") +
   theme_minimal() + theme(legend.position="none") +
   ggtitle("Antall cornere", subtitle = "Rima Iraki - Ræppa Norgi")
@@ -140,7 +252,7 @@ alle_spm |>
 Til tross for utfordringene har Irak store naturressurser, spesielt olje, som er en viktig del av økonomien.
 Og selv om vi kan være enige om at det er en næring som kommer til å være like viktig i fremtiden som i dag,
 er det ikke sikkert vi er like enige om alt på banen. Vi spør hvor mange kort blir delt ut?
- 
+
 
 ```{r irak_kort}
 
@@ -153,7 +265,7 @@ alle_spm |>
   ggplot(aes(x=tekst)) +
   geom_label(aes(y=svar, label = autograf, col=svar),
              position = position_jitter(width = 0.2, height = 0.2)
-             ) +
+  ) +
   xlab("") + ylab("") +
   theme_minimal() + theme(legend.position="none") +
   ggtitle("Antall kort", subtitle = "")
@@ -207,5 +319,38 @@ alle_spm |>
 <!-- ennå ikkje e delt ud. -->
 
 
+## Appendix
 
 
+
+### Gamle analyser
+
+
+
+
+### Tippelapper
+
+```{r tippelapper}
+spmtab <- alle_spm |> 
+  distinct()
+# |> 
+  # flextable::flextable() |> 
+  # flextable::set_table_properties(layout = "autofit")
+
+svartab <- bind_rows(alle_svar|> 
+            filter(id!="Fasit") ,
+          metadata |> 
+            filter(id!="Fasit") |> 
+            select(id, svar = klubblaget_ditt) |> 
+            mutate(spm = "Klubblaget ditt")) |> 
+  left_join(metadata |> select(autograf,id), by = join_by(id)) |> 
+  select(-id) |> 
+pivot_wider(names_from=autograf, values_from=svar) 
+# |>
+  # flextable::flextable() |> 
+  # flextable::set_table_properties(layout = "autofit")
+
+spmtab |> left_join(svartab) |>
+  flextable::flextable() |>
+  flextable::set_table_properties(layout = "autofit")
+```
