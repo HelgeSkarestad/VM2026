@@ -16,7 +16,9 @@ execute:
 ![](bilder/fifa.jpg)
 
 Denne rapporten viser resultatene fra VM-tuppekunkurransen.
-Det fins script for å tolka excel-tabellen.
+Utrolig avansert analyse e anvendt for å å tolka innsendte tippelapper. 
+Analysene tyte ut i figurer og tabeller i det følgande notatet.
+Notatet e oppdatert `r paste0(lubridate::mday(Sys.Date()),". ",c("Juni","Juli")[lubridate::month(Sys.Date())-5]," ",lubridate::year(Sys.Date()))`.
 
 
 
@@ -33,7 +35,7 @@ source(here::here("data/datavask.R"))
 
 ### Vanligste svar
 
-```{r vanlig}
+```{r vanlig, include=FALSE}
 
 
 alle_svar |> 
@@ -64,28 +66,26 @@ alle_svar |>
 
 ### Irak-kampen
 
+
 ```{r irak_maal}
-
-
 alle_spm |> 
   filter(spm %in% c("Q9","Q10")) |> 
-  left_join(alle_svar |> filter(id!="Fasit"),by=join_by(spm)) |> 
-  left_join(metadata |>  select(id, autograf)) |> 
+  left_join(alle_svar |> filter(id!="Fasit"),by = join_by(spm)) |> 
+  left_join(metadata |>  select(id, autograf), by = join_by(id)) |> 
   # group_by(spm, tekst, svar) |> 
   # summarise(autograf = paste0(autograf,sep=", ")) |> 
   ggplot(aes(x=tekst)) +
-  geom_label(aes(y=svar, label = autograf),
+  geom_label(aes(y=svar, label = autograf, col=svar),
              position = position_jitter(width = 0.2, height = 0.2)
              ) +
   xlab("") + ylab("") +
-  theme_minimal()
+  theme_minimal() + theme(legend.position="none") +
+  ggtitle(label = "Antall mål Irak-Norge", subtitle = "Saddam mod Jonas")
 ```
 
 
 
 ```{r irak_innbytter}
-
-
 alle_spm |> 
   filter(spm %in% c("Q11")) |> 
   left_join(alle_svar |> filter(id!="Fasit"),by=join_by(spm)) |> 
@@ -93,11 +93,12 @@ alle_spm |>
   # group_by(spm, tekst, svar) |> 
   # summarise(autograf = paste0(autograf,sep=", ")) |> 
   ggplot(aes(x=tekst)) +
-  geom_label(aes(y=svar, label = autograf),
+  geom_label(aes(y=svar, label = autograf, col=svar),
              position = position_jitter(width = 0.2, height = 0.2)
              ) +
   xlab("") + ylab("") +
-  theme_minimal()
+  theme_minimal()+ theme(legend.position="none") +
+  ggtitle("Fysste innbytter Irak-Norge")
 ```
 
 
@@ -111,11 +112,12 @@ alle_spm |>
   # group_by(spm, tekst, svar) |> 
   # summarise(autograf = paste0(autograf,sep=", ")) |> 
   ggplot(aes(x=tekst)) +
-  geom_label(aes(y=svar, label = autograf),
+  geom_label(aes(y=svar, label = autograf, col=svar),
              position = position_jitter(width = 0.2, height = 0.2)
              ) +
   xlab("") + ylab("") +
-  theme_minimal()
+  theme_minimal() + theme(legend.position="none") +
+  ggtitle("Antall cornere", subtitle = "Rima Iraki - Ræppa Norgi")
 ```
 
 
@@ -128,22 +130,30 @@ alle_spm |>
   # group_by(spm, tekst, svar) |> 
   # summarise(autograf = paste0(autograf,sep=", ")) |> 
   ggplot(aes(x=tekst)) +
-  geom_label(aes(y=svar, label = autograf),
+  geom_label(aes(y=svar, label = autograf, col=svar),
              position = position_jitter(width = 0.2, height = 0.2)
              ) +
   xlab("") + ylab("") +
-  theme_minimal()
+  theme_minimal() + theme(legend.position="none") +
+  ggtitle("Antall kort", subtitle = "")
 ```
 
 
-## Poeng som allerede e delt ud  &#129351;
-Her komme info om poeng som allerede e delt ud. Typisk itte innledande runder.
 
 ### Topp
 
+Her komme det tabell med de så har mest poeng
+
+
 ![](bilder/ebh.jpg)
 
+<!-- Edderkoppplott?? -->
+
 ### Bunn
+
+og minst poeng
+
+
 ![](bilder/ebh_oppgitt.jpg)
 
 ```{r leder}
@@ -168,12 +178,9 @@ Her komme info om poeng som allerede e delt ud. Typisk itte innledande runder.
 
 ## Poeng som gjenstår å spela om
 
+Her komme info om kor mange poeng folk har igjen å  få utdelt på spørsmålene som 
+ennå ikkje e delt ud.
 
-Her komme info om kordan folk har svart på de spørsmålene som ennå ikkje e delt ud.
-
-
-## Avansert analyse?
-F.eks. ka resultat vil gi størst endring i resultattabellen?
 
 
 
