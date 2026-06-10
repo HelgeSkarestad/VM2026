@@ -29,11 +29,11 @@ Alle svar som er levert inn ligger her:
 <a href="tippelapper.html">Tippelapper</a>
 
 
-
+<!--
 Her er pekere til tidligere versjoner av rapporten:
 
 <a href="irakkampen.html">Før Irak-kampen</a>
-
+-->
 
 
 
