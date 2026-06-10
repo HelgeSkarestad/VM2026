@@ -26,13 +26,13 @@ God lesning!
 Notatet er oppdatert `r paste0(lubridate::mday(Sys.Date()),". ",c("juni","juli")[lubridate::month(Sys.Date())-5]," ",lubridate::year(Sys.Date()))`
 
 Alle svar som er levert inn ligger her:
-<a href="xxx.github.io/tippelapper.html">Tippelapper</a>
+<a href="tippelapper.html">Tippelapper</a>
 
 
 
 Her er pekere til tidligere versjoner av rapporten:
 
-<a href="xxx.github.io/irakkampen.html">Før Irak-kampen</a>
+<a href="irakkampen.html">Før Irak-kampen</a>
 
 
 
