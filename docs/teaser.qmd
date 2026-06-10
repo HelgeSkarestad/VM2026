@@ -1,0 +1,18 @@
+---
+title: "&#x26BD; VM-tuppekunkurranse – Resultater &#127942;"
+author: "Helge & KI"
+format:
+  html:
+    toc: true
+    number-sections: true
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+
+![](bilder/fifa.jpg)
+
+
+
