@@ -23,7 +23,17 @@ fra om du har forslag til analyser eller ser feil i dataene.
 God lesning!
 
 
-Notatet er oppdatert `r paste0(lubridate::mday(Sys.Date()),". ",c("juni","juli")[lubridate::month(Sys.Date())-5]," ",lubridate::year(Sys.Date()))`.
+Notatet er oppdatert `r paste0(lubridate::mday(Sys.Date()),". ",c("juni","juli")[lubridate::month(Sys.Date())-5]," ",lubridate::year(Sys.Date()))`
+
+Alle svar som er levert inn ligger her:
+<a href="xxx.github.io/tippelapper.html">Tippelapper</a>
+
+
+
+Her er pekere til tidligere versjoner av rapporten:
+
+<a href="xxx.github.io/irakkampen.html">Før Irak-kampen</a>
+
 
 
 
@@ -418,44 +428,3 @@ alle_spm |>
 <!-- Her komme info om kor mange poeng folk har igjen å  få utdelt på spørsmålene som  -->
 <!-- ennå ikkje e delt ud. -->
 
-
-## Appendix
-
-
-
-### Gamle analyser
-
-
-
-
-### Tippelapper
-
-```{r tippelapper}
-spmtab <- tibble(spm="Klubblaget ditt",
-                   tekst="",
-                   poeng=NA) |> 
-  bind_rows(alle_spm |> 
-              distinct())
-# |> 
-  # flextable::flextable() |> 
-  # flextable::set_table_properties(layout = "autofit")
-
-svartab <- bind_rows(alle_svar|> 
-            filter(id!="Fasit") ,
-          metadata |> 
-            filter(id!="Fasit") |> 
-            select(id, svar = klubblaget_ditt) |> 
-            mutate(spm = "Klubblaget ditt")) |> 
-  left_join(metadata |> select(autograf,id), by = join_by(id)) |> 
-  select(-id) |> 
-pivot_wider(names_from=autograf, values_from=svar) 
-# |>
-  # flextable::flextable() |> 
-  # flextable::set_table_properties(layout = "autofit")
-
-spmtab |> left_join(svartab) |>
-  # arrange(spm) |> 
-  flextable::flextable() |>
-  flextable::set_table_properties(layout = "autofit") |> 
-  flextable::font(fontname="Arial",part="all")
-```
