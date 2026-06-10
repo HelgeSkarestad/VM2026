@@ -14,7 +14,7 @@ execute:
 
 
 Her er link tilbake til rapporten:
-<a href="xxx.github.io/index.html">Hovedside</a>
+<a href="index.html">Hovedside</a>
 
 
 
