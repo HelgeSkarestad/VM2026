@@ -5,6 +5,7 @@ format:
   html:
     toc: true
     number-sections: true
+    mainfont: "Arial"
 execute:
   echo: false
   warning: false
@@ -40,18 +41,98 @@ library(ggplot2)
 source(here::here("data/datavask.R"))
 
 
-wrap_2_lines <- function(x, width = 40) {
+wrap_2_lines <- function(x, width = 30) {
   vapply(x, function(label) {
     parts <- strwrap(label, width = width)
     paste(parts, collapse = "\n")
   }, character(1))
 }
 
-
 ```
 
 
-<!-- Vi har fått inn x antall svar -->
+```{r metainfo}
+metainfo <- metadata |> 
+  filter(id!="Fasit") |> 
+  mutate(`Utfylt klokkeslett` = lubridate::hour(starttidspunkt),
+         Tidsbruk = fullforingstidspunkt-starttidspunkt,
+         Tidsbruk = as.numeric(Tidsbruk),
+         `Utfylt tidspunkt` = case_match(`Utfylt klokkeslett`,
+                                         seq(0,5) ~ "På natten",
+                                         seq(6,7) ~ "Før frokost",
+                                         seq(8,16) ~ "I arbeidstid",
+                                         seq(17,20) ~ "Kveldstid",
+                                         seq(21,23) ~ "Leggetid"))
+```
+
+Vi har fått inn `r nrow(metainfo)` svar. 
+Figuren viser når disse svarene har kommet inn. Mange har ventet i det lengste for
+å få inn så stort beslutningsgrunnlag som mulig. Andre har nok glemt å fylle ut.
+
+```{r leveringsdato, include = TRUE}
+metainfo |> 
+  mutate(Leveringsdato = lubridate::date(fullforingstidspunkt),
+         Leveringsinfo = case_when(fullforingstidspunkt < lubridate::mdy_h("06072026_21") ~ "Før Marokko-kampen",
+                                   fullforingstidspunkt < lubridate::mdy_h("06092026_22") ~ "Før Eivind purra",
+                                   fullforingstidspunkt < lubridate::mdy_h("06112026_21") ~ "Etter Eivind purra ",
+                                   .default = "Etter fristen"
+                                    )) |> 
+  group_by(Leveringsdato) |> 
+  mutate(yakse = seq(0,2,length.out=n())) |>
+  ungroup() |> 
+  ggplot(aes(x=Leveringsdato)) +
+  geom_label(aes(y=yakse,label=autograf,col=Leveringsinfo)) +
+  theme_minimal() +
+  theme(legend.position = "bottom",
+        legend.direction = "horizontal") +
+    guides(color = guide_legend(reverse = TRUE)) +
+  scale_y_continuous(labels = NULL) + ylab("")
+  # scale_x_continuous(labels=NULL) + xlab("")
+```
+
+<!-- 
+Utfylling i tradisjonell arbeidstid er også vanlig 
+På kveldstid, huskeregel: når munnteipen er på, skal vi unngå lyskilder som er blå. 
+-->
+
+```{r leveringstid, include = FALSE}
+metainfo |> 
+  group_by(`Utfylt klokkeslett`) |> 
+  mutate(yakse = seq(0,3,length.out=n())) |>
+  ungroup() |> 
+  ggplot(aes(x=yakse)) +
+  geom_label(aes(y=`Utfylt klokkeslett`,label=autograf, col=`Utfylt tidspunkt`)) +
+  theme_minimal() +
+  scale_y_reverse() +
+  theme(legend.position = "bottom",
+        legend.direction = "horizontal") +
+  scale_x_continuous(labels=NULL) + xlab("")
+```
+
+
+```{r tidsbruk, include = FALSE}
+
+vek <- cut(metainfo$Tidsbruk, 
+    quantile(metainfo$Tidsbruk,probs=seq(0,1,length.out=4)), 
+    include.lowest = TRUE)
+levels(vek) <- c("Useriøst","Innafor","Fritidsproblem")
+
+metainfo$Tidskategori <- vek
+
+metainfo |> 
+  mutate(Tid = round(Tidsbruk,-1)) |> 
+  group_by(Tid) |> 
+  mutate(yakse = seq(0,3,length.out=n())) |>
+  ungroup() |> 
+  ggplot(aes(x=Tidsbruk)) +
+  geom_label(aes(y=yakse,label=autograf, col=Tidskategori)) +
+  theme_minimal() + 
+  theme(legend.position = "bottom",
+        legend.direction = "horizontal") +
+  scale_y_continuous(labels = NULL) + ylab("") + xlab("Tidsbruk (Minutter)")
+  # scale_x_continuous(labels=NULL) + xlab("")
+```
+
 
 
 
@@ -65,22 +146,24 @@ interessante_spm <- alle_spm |>
   filter(id!="Fasit") |> 
   group_by(spm,svar) |> 
   summarise(Andel = n()) |> 
-  mutate(Andel = Andel/sum(Andel)) 
+  mutate(Andel = Andel/sum(Andel),
+         Sortering = abs(Andel-0.5))
 
 ulike_svar <- interessante_spm|> 
-  arrange(Andel) |> 
+  arrange(Sortering) |> 
   ungroup() |> 
   distinct(spm) |> 
-  slice(1:2)
+  slice(1:3)
 
 like_svar <- interessante_spm|> 
-  arrange(-Andel) |> 
+  arrange(-Sortering) |> 
   ungroup() |> 
   distinct(spm) |> 
-  slice(1:2)
+  slice(1:3)
 ```
 
-Er vi enige om noe. Det viser seg at ja, jammen er vi det.
+Er vi enige om noe. Det viser seg at ja, jammen er vi det. Figuren viser spørsmål 
+hvor det er størst grad av enighet
 
 ```{r innledning_enighet}
 alle_spm |> 
@@ -100,7 +183,8 @@ alle_spm |>
 
 ```
 
-Men vi er også uenige om mye.
+Men vi er også uenige om mye. Figuren viser spørsmål hvor vi har vært mest 
+delte i svarene.
 
 ```{r innledning_uenighet}
 alle_spm |> 
@@ -123,9 +207,7 @@ alle_spm |>
 
 ## Gruppespill
 Praksisen med gruppespill i fotball-VM går faktisk helt tilbake til det aller første verdensmesterskapet i 1930.
-
 I VM i Uruguay i 1930 ble lagene delt inn i grupper (round robin), og gruppevinnerne gikk videre til semifinaler.
-
 Men formatet har ikke vært helt likt hele tiden:
 
 - 1934 og 1938: ingen gruppespill – kun utslagsturnering fra start.
@@ -137,6 +219,9 @@ Men formatet har ikke vært helt likt hele tiden:
 
 Dette betyr at ideen om grupper – der lag møtes flere ganger før utslagsrunder – har vært sentral i VM nesten helt siden starten.
 Har det noe å si for vår felles evne til å gjette på lagenes prestasjoner i gruppene?
+
+
+### Dypdykk gruppe A-D
 
 ```{r gruppe_A_L}
 gruppesvar <- alle_spm |> 
@@ -157,8 +242,9 @@ gruppesvar <- alle_spm |>
             Hvem = paste0(autograf,collapse = ", ")) |> 
   arrange(-Antall)
 ```
-De neste tabellene viser et innblikk i grupperesultatene som var mest typiske og
-mest utypiske i tippekupongene. Husk å si fra til de som har tippet mest idiotisk.
+Den neste tabellen viser et innblikk i grupperesultatene som var mest typiske og
+mest utypiske i tippekupongene. I den første tabellen vises de grupperesultatene 
+som flest har tippet. 
 
 ```{r gruppe_A_D_mest_vanlig}
 ft1 <- gruppesvar |> 
@@ -167,18 +253,30 @@ ft1 <- gruppesvar |>
   slice(1) |> 
   distinct() |> 
   rename(`Mest vanlig rekkefølge` = Rekkefølge) |> 
+  select(-Antall) |> 
   flextable::flextable()
-ft1 <- flextable::set_table_properties(ft1, layout = "autofit")
-ft1
 
+ft1 <- flextable::set_table_properties(ft1, layout = "autofit") |> 
+  flextable::font(fontname="Arial",part="all")
+
+ft1
+```
+
+I den neste tabellen vises de grupperesultatene som færrest har valgt.
+Husk å si fra til de som har tippet mest idiotisk!
+
+
+```{r gruppe_A_D_mest_uvanlig}
 ft2 <- gruppesvar |> 
   # filter(Gruppe %in% LETTERS[1:12]) |>
   filter(Gruppe %in% LETTERS[1:4]) |>
   slice(n()) |> 
   distinct() |> 
   rename(`Mest uvanlige rekkefølge` = Rekkefølge) |> 
+  select(-Antall) |> 
   flextable::flextable()
-ft2 <- flextable::set_table_properties(ft2, layout = "autofit")
+ft2 <- flextable::set_table_properties(ft2, layout = "autofit") |> 
+  flextable::font(fontname="Arial",part="all")
 ft2
 ```
 
@@ -202,7 +300,7 @@ alle_spm |>
   ) +
   xlab("") + ylab("") +
   theme_minimal() + theme(legend.position="none") +
-  ggtitle(label = "Antall mål Irak-Norge", subtitle = "Saddam mod Jonas")
+  ggtitle(label = "Antall mål Irak-Norge", subtitle = "Saddam mot Jonas")
 ```
 
 
@@ -218,17 +316,19 @@ alle_spm |>
   # summarise(autograf = paste0(autograf,sep=", ")) |> 
   ggplot(aes(x=tekst)) +
   geom_label(aes(y=svar, label = autograf, col=svar),
-             position = position_jitter(width = 0.2, height = 0.2)
+             position = position_jitter(width = 0.4, height = 0.2)
   ) +
   xlab("") + ylab("") +
   theme_minimal()+ theme(legend.position="none") +
-  ggtitle("Fysste innbytter Irak-Norge")
+  ggtitle("Første innbytter Irak-Norge")
 ```
 
 
 
 
-Befolkningen i Irak består hovedsakelig av arabere og kurdere, og de fleste er muslimer, enten sunni eller sjia. Landet har de siste tiårene vært preget av konflikter og politisk uro, men det jobbes fortsatt med å bygge stabilitet og utvikling.
+Befolkningen i Irak består hovedsakelig av arabere og kurdere, og de fleste er muslimer, 
+enten sunni eller sjia. Landet har de siste tiårene vært preget av konflikter og politisk uro,
+men det jobbes fortsatt med å bygge stabilitet og utvikling. 
 Den kurdiske delen av Irak ligger i nordøstre hjørnet. Hvor mange hjørnespark blir det i kampen? 
 
 
@@ -331,8 +431,11 @@ alle_spm |>
 ### Tippelapper
 
 ```{r tippelapper}
-spmtab <- alle_spm |> 
-  distinct()
+spmtab <- tibble(spm="Klubblaget ditt",
+                   tekst="",
+                   poeng=NA) |> 
+  bind_rows(alle_spm |> 
+              distinct())
 # |> 
   # flextable::flextable() |> 
   # flextable::set_table_properties(layout = "autofit")
@@ -351,6 +454,8 @@ pivot_wider(names_from=autograf, values_from=svar)
   # flextable::set_table_properties(layout = "autofit")
 
 spmtab |> left_join(svartab) |>
+  # arrange(spm) |> 
   flextable::flextable() |>
-  flextable::set_table_properties(layout = "autofit")
+  flextable::set_table_properties(layout = "autofit") |> 
+  flextable::font(fontname="Arial",part="all")
 ```
