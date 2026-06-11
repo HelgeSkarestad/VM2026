@@ -5,6 +5,7 @@ format:
   html:
     toc: true
     number-sections: true
+    mainfont: "Arial"
 execute:
   echo: false
   warning: false
@@ -12,18 +13,28 @@ execute:
 ---
 
 
-
-## Innledning 
-
 ![](bilder/fifa.jpg)
 
 Denne rapporten viser resultatene fra VM-tuppekunkurransen.
 Utrolig avansert analyse er anvendt for å tolke innsendte tippelapper. 
-Analysene tyter ut i figurer og tabeller i det følgende notatet. 
+Analysene tyter ut i figurer og tabeller i det følgende notatet. Si gjerne
+fra om du har forslag til analyser eller ser feil i dataene.
+Oppdaterte analyser kommer etter Irak-Norge.
+
 God lesning!
 
 
-Notatet er oppdatert `r paste0(lubridate::mday(Sys.Date()),". ",c("Juni","Juli")[lubridate::month(Sys.Date())-5]," ",lubridate::year(Sys.Date()))`.
+Notatet er oppdatert `r paste0(lubridate::mday(Sys.Date()),". ",c("juni","juli")[lubridate::month(Sys.Date())-5]," ",lubridate::year(Sys.Date()))`
+
+Alle svar som er levert inn ligger her:
+<a href="tippelapper.html">Tippelapper</a>
+
+
+<!--
+Her er pekere til tidligere versjoner av rapporten:
+
+<a href="irakkampen.html">Før Irak-kampen</a>
+-->
 
 
 
@@ -39,40 +50,269 @@ har tippet ulikt få vite det. Den siste kan kanskje generere små bets foran TV
 ```{r dataprep}
 library(ggplot2)
 source(here::here("data/datavask.R"))
-```
-
-### Vanligste svar
-
-```{r vanlig, include=FALSE}
 
 
-alle_svar |> 
-  filter(id!="Fasit",
-         # spm %in% c("Q1","Q2","Q3")
-         ) |> 
-  left_join(alle_spm,
-            by = join_by(spm)) |> 
-  group_by(spm,tekst,svar) |> 
-  summarise(Antall = n()) |> 
-  summarise(std = sd(Antall)) |> 
-  arrange(-std)
+wrap_2_lines <- function(x, width = 30) {
+  vapply(x, function(label) {
+    parts <- strwrap(label, width = width)
+    paste(parts, collapse = "\n")
+  }, character(1))
+}
 
-
-
-alle_svar |> 
-  filter(id!="Fasit",
-         spm %in% c("Q11","Q2","Q3")
-         ) |> 
-  left_join(alle_spm,
-            by = join_by(spm)) |> 
-  group_by(spm,tekst,svar) |> 
-  summarise(Antall = n()) |> 
-  ggplot(aes(x=tekst)) +
-  geom_bar(aes(y=Antall,fill=svar), stat="identity")
 ```
 
 
-### Irak-kampen
+```{r metainfo}
+metainfo <- metadata |> 
+  filter(id!="Fasit") |> 
+  mutate(`Utfylt klokkeslett` = lubridate::hour(starttidspunkt),
+         Tidsbruk = fullforingstidspunkt-starttidspunkt,
+         Tidsbruk = as.numeric(Tidsbruk),
+         `Utfylt tidspunkt` = case_match(`Utfylt klokkeslett`,
+                                         seq(0,5) ~ "På natten",
+                                         seq(6,7) ~ "Før frokost",
+                                         seq(8,16) ~ "I arbeidstid",
+                                         seq(17,20) ~ "Kveldstid",
+                                         seq(21,23) ~ "Leggetid"))
+```
+
+Vi har fått inn `r nrow(metainfo)` svar. 
+Figuren viser når disse svarene har kommet inn. Mange har ventet i det lengste for
+å få inn så stort beslutningsgrunnlag som mulig. Andre har nok glemt å fylle ut.
+
+```{r leveringsdato, include = TRUE}
+metainfo |> 
+  mutate(Leveringsdato = lubridate::date(fullforingstidspunkt),
+         Leveringsinfo = case_when(fullforingstidspunkt < lubridate::mdy_h("06072026_21") ~ "Før Marokko-kampen",
+                                   fullforingstidspunkt < lubridate::mdy_h("06092026_22") ~ "Før Eivind purra",
+                                   fullforingstidspunkt < lubridate::mdy_h("06112026_21") ~ "Etter Eivind purra ",
+                                   .default = "Etter fristen"
+                                    )) |> 
+  group_by(Leveringsdato) |> 
+  mutate(yakse = seq(0,2,length.out=n())) |>
+  ungroup() |> 
+  ggplot(aes(x=Leveringsdato)) +
+  geom_label(aes(y=yakse,label=autograf,col=Leveringsinfo),
+             position = position_jitter(width = 0.1, height = 0.4)) +
+  theme_minimal() +
+  theme(legend.position = "bottom",
+        legend.direction = "horizontal") +
+    guides(color = guide_legend(reverse = TRUE)) +
+  scale_y_continuous(labels = NULL) + ylab("")
+  # scale_x_continuous(labels=NULL) + xlab("")
+```
+
+<!-- 
+Utfylling i tradisjonell arbeidstid er også vanlig 
+På kveldstid, huskeregel: når munnteipen er på, skal vi unngå lyskilder som er blå. 
+-->
+
+```{r leveringstid, include = FALSE}
+metainfo |> 
+  group_by(`Utfylt klokkeslett`) |> 
+  mutate(yakse = seq(0,1,length.out=n())) |>
+  ungroup() |> 
+  ggplot(aes(x=yakse)) +
+  geom_label(aes(y=`Utfylt klokkeslett`,label=autograf, col=`Utfylt tidspunkt`),
+             position = position_jitter(width = 0.1, height = 0.0)) +
+  theme_minimal() +
+  scale_y_reverse() +
+  theme(legend.position = "bottom",
+        legend.direction = "horizontal") +
+  scale_x_continuous(labels=NULL) + xlab("")
+```
+
+
+```{r tidsbruk, include = FALSE}
+
+vek <- cut(metainfo$Tidsbruk, 
+    quantile(metainfo$Tidsbruk,probs=seq(0,1,length.out=4)), 
+    include.lowest = TRUE)
+levels(vek) <- c("Useriøst","Innafor","Fritidsproblem")
+
+metainfo$Tidskategori <- vek
+
+metainfo |> 
+  mutate(Tid = round(Tidsbruk,-1)) |> 
+  group_by(Tid) |> 
+  mutate(yakse = seq(0,3,length.out=n())) |>
+  ungroup() |> 
+  ggplot(aes(x=Tidsbruk)) +
+  geom_label(aes(y=yakse,label=autograf, col=Tidskategori)) +
+  theme_minimal() + 
+  theme(legend.position = "bottom",
+        legend.direction = "horizontal") +
+  scale_y_continuous(labels = NULL) + ylab("") + xlab("Tidsbruk (Minutter)")
+  # scale_x_continuous(labels=NULL) + xlab("")
+```
+
+
+
+
+## Innledning
+
+```{r innledning_prepp}
+interessante_spm <- alle_spm |> 
+  filter(spm %in% paste0("Q",c(1:7))) |> 
+  left_join(alle_svar,
+            by = join_by(spm)) |> 
+  filter(id!="Fasit") |> 
+  group_by(spm,svar) |> 
+  summarise(Andel = n()) |> 
+  mutate(Andel = Andel/sum(Andel),
+         Sortering = abs(Andel-0.5))
+
+ulike_svar <- interessante_spm|> 
+  arrange(Sortering) |> 
+  ungroup() |> 
+  distinct(spm) |> 
+  slice(1:2)
+  # slice(1:3)
+
+like_svar <- interessante_spm|> 
+  arrange(-Sortering) |> 
+  ungroup() |> 
+  distinct(spm) |> 
+  slice(1:2)
+  # slice(1:3)
+```
+
+Er vi enige om noe. Det viser seg at ja, jammen er vi det. Figuren viser spørsmål 
+hvor det er størst grad av enighet
+
+```{r innledning_enighet}
+
+alle_spm |> 
+  inner_join(like_svar,by = join_by(spm)) |>
+  left_join(alle_svar,
+            by = join_by(spm)) |> 
+  left_join(metadata |> select(id,autograf)) |> 
+  filter(id != "Fasit") |> 
+  ggplot(aes(x=tekst,y=svar,
+                 col=svar)) +
+  geom_point(size=1,alpha=0.5) +
+  geom_label(aes(label = autograf,
+                 col=svar),
+             position = position_jitter(width = 0.5, height = 0.5,seed = 123)) +
+
+  # ggrepel::geom_label_repel(aes(label = autograf),
+  #            position = position_jitter(width = 0.3, height = 0.3)
+  #            ) +
+  scale_x_discrete(labels = wrap_2_lines) +
+  xlab("") + ylab("") +
+  theme_minimal() + theme(legend.position="none") +
+  ggtitle(label = "Innledende spørsmål", subtitle = "Spørsmål med størst enighet")
+
+```
+
+
+Men vi er også uenige om mye. Figuren viser spørsmål hvor vi har vært mest 
+delte i svarene.
+
+```{r innledning_uenighet}
+alle_spm |> 
+  inner_join(ulike_svar,by = join_by(spm)) |>
+  left_join(alle_svar,
+            by = join_by(spm)) |> 
+  left_join(metadata |> select(id,autograf)) |> 
+  filter(id != "Fasit") |> 
+  ggplot(aes(x=tekst,y=svar)) +
+  # geom_label(aes(label = autograf,
+  #                col=svar),
+  #            position = position_jitter(width = 0.4, height = 0.4)) +
+  
+  ggrepel::geom_label_repel(aes(label = autograf,
+                 col=svar),
+             position = position_jitter(width = 0.3, height = 0.3)
+             ) +
+  scale_x_discrete(labels = wrap_2_lines) +
+  xlab("") + ylab("") +
+  theme_minimal() + theme(legend.position="none") +
+  ggtitle(label = "Innledende spørsmål", subtitle = "Spørsmål med størst uenighet")
+
+```
+
+
+## Gruppespill
+Praksisen med gruppespill i fotball-VM går faktisk helt tilbake til det aller første verdensmesterskapet i 1930.
+I VM i Uruguay i 1930 ble lagene delt inn i grupper (round robin), og gruppevinnerne gikk videre til semifinaler.
+Men formatet har ikke vært helt likt hele tiden:
+
+- 1934 og 1938: ingen gruppespill – kun utslagsturnering fra start.
+
+- 1950: gruppespillet kom tilbake (og finalen ble faktisk avgjort i en sluttgruppe).
+
+- Fra 1954 og utover: gruppespill + utslagsspill ble standardstrukturen som ligner det vi har i dag. 
+
+
+Dette betyr at ideen om grupper – der lag møtes flere ganger før utslagsrunder – har vært sentral i VM nesten helt siden starten.
+Har det noe å si for vår felles evne til å gjette på lagenes prestasjoner i gruppene?
+
+Dypdykk i hver gruppe kommer etter hvert som gruppespillet utfolder seg.
+
+
+### Dypdykk gruppe A-D
+
+```{r gruppe_A_L}
+gruppesvar <- alle_spm |> 
+  distinct() |> 
+  # filter(spm %in% paste0("Q",seq(31.0,31.4,0.1))) |>
+  # filter(spm %in% paste0("Q",seq(31.0,34.4,0.1))) |> 
+  filter(spm %in% paste0("Q",seq(31.0,42.4,0.1))) |>
+  left_join(alle_svar, by = join_by(spm)) |> 
+  left_join(metadata |> select(id,autograf), by =join_by(id)) |> 
+  filter(id!="Fasit") |> 
+  mutate(Gruppe = substr(tekst,
+                         nchar(tekst),
+                         nchar(tekst))) |> 
+  group_by(Gruppe, id, autograf) |> 
+  summarise(Rekkefølge = paste0(svar,collapse=", ")) |> 
+  group_by(Gruppe,Rekkefølge) |> 
+  summarise(Antall = n(),
+            Hvem = paste0(autograf,collapse = ", ")) |> 
+  arrange(-Antall)
+```
+Den neste tabellen viser et innblikk i grupperesultatene som var mest typiske og
+mest utypiske i tippekupongene. I den første tabellen vises de grupperesultatene 
+som flest har tippet. 
+
+```{r gruppe_A_D_mest_vanlig}
+ft1 <- gruppesvar |> 
+  # filter(Gruppe %in% LETTERS[1:12]) |>
+  filter(Gruppe %in% LETTERS[1:4]) |>
+  slice(1) |> 
+  distinct() |> 
+  rename(`Mest vanlig rekkefølge` = Rekkefølge) |> 
+  select(-Antall) |> 
+  flextable::flextable()
+
+ft1 <- flextable::set_table_properties(ft1, layout = "autofit") |> 
+  flextable::font(fontname="Arial",part="all")
+
+ft1
+```
+
+I den neste tabellen vises de grupperesultatene som færrest har valgt.
+Husk å si fra til de som har tippet mest idiotisk!
+
+
+```{r gruppe_A_D_mest_uvanlig}
+ft2 <- gruppesvar |> 
+  # filter(Gruppe %in% LETTERS[1:12]) |>
+  filter(Gruppe %in% LETTERS[1:4]) |>
+  slice(n()) |> 
+  distinct() |> 
+  rename(`Mest uvanlige rekkefølge` = Rekkefølge) |> 
+  select(-Antall) |> 
+  flextable::flextable()
+ft2 <- flextable::set_table_properties(ft2, layout = "autofit") |> 
+  flextable::font(fontname="Arial",part="all")
+ft2
+```
+
+
+
+## Irak-kampen
 
 Irak er et land i Midtøsten som ligger mellom Iran i øst og Syria og Jordan i vest. Landet har en lang og rik historie som går helt tilbake til oldtiden, da området var kjent som Mesopotamia – ofte omtalt som «sivilisasjonens vugge» fordi noen av verdens første byer, skriftspråk og lover oppsto her. Skriftspråk og lover er to av sivilisasjonens fulltreffere,
 men hvor mange fulltreffere får vi i kampen? 
@@ -85,12 +325,19 @@ alle_spm |>
   # group_by(spm, tekst, svar) |> 
   # summarise(autograf = paste0(autograf,sep=", ")) |> 
   ggplot(aes(x=tekst)) +
-  geom_label(aes(y=svar, label = autograf, col=svar),
-             position = position_jitter(width = 0.2, height = 0.2)
+  # geom_label(aes(y=svar, label = autograf, col=svar),
+  #            position = position_jitter(width = 0.25, height = 0.25)
+  # ) +
+  
+  ggrepel::geom_label_repel(aes(y=svar,label = autograf,
+                 col=svar),
+             position = position_jitter(width = 0.4, height = 0.2)
              ) +
   xlab("") + ylab("") +
-  theme_minimal() + theme(legend.position="none") +
-  ggtitle(label = "Antall mål Irak-Norge", subtitle = "Saddam mod Jonas")
+  theme_minimal() + #theme(legend.position="none") +
+  theme(legend.position = "bottom",
+        legend.direction = "horizontal") +
+  ggtitle(label = "Antall mål Irak-Norge", subtitle = "Saddam mot Jonas")
 ```
 
 
@@ -105,18 +352,25 @@ alle_spm |>
   # group_by(spm, tekst, svar) |> 
   # summarise(autograf = paste0(autograf,sep=", ")) |> 
   ggplot(aes(x=tekst)) +
-  geom_label(aes(y=svar, label = autograf, col=svar),
-             position = position_jitter(width = 0.2, height = 0.2)
+  # geom_label(aes(y=svar, label = autograf, col=svar),
+  #            position = position_jitter(width = 0.4, height = 0.2)
+  # ) +
+  
+  ggrepel::geom_label_repel(aes(y=svar,label = autograf,
+                 col=svar),
+             position = position_jitter(width = 0.4, height = 0.2)
              ) +
   xlab("") + ylab("") +
   theme_minimal()+ theme(legend.position="none") +
-  ggtitle("Fysste innbytter Irak-Norge")
+  ggtitle("Første innbytter Irak-Norge")
 ```
 
 
 
 
-Befolkningen i Irak består hovedsakelig av arabere og kurdere, og de fleste er muslimer, enten sunni eller sjia. Landet har de siste tiårene vært preget av konflikter og politisk uro, men det jobbes fortsatt med å bygge stabilitet og utvikling.
+Befolkningen i Irak består hovedsakelig av arabere og kurdere, og de fleste er muslimer, 
+enten sunni eller sjia. Landet har de siste tiårene vært preget av konflikter og politisk uro,
+men det jobbes fortsatt med å bygge stabilitet og utvikling. 
 Den kurdiske delen av Irak ligger i nordøstre hjørnet. Hvor mange hjørnespark blir det i kampen? 
 
 
@@ -129,8 +383,13 @@ alle_spm |>
   # group_by(spm, tekst, svar) |> 
   # summarise(autograf = paste0(autograf,sep=", ")) |> 
   ggplot(aes(x=tekst)) +
-  geom_label(aes(y=svar, label = autograf, col=svar),
-             position = position_jitter(width = 0.2, height = 0.2)
+  # geom_label(aes(y=svar, label = autograf, col=svar),
+  #            position = position_jitter(width = 0.2, height = 0.2)
+  # ) +
+  
+  ggrepel::geom_label_repel(aes(y=svar,label = autograf,
+                 col=svar),
+             position = position_jitter(width = 0.4, height = 0.2)
              ) +
   xlab("") + ylab("") +
   theme_minimal() + theme(legend.position="none") +
@@ -140,7 +399,7 @@ alle_spm |>
 Til tross for utfordringene har Irak store naturressurser, spesielt olje, som er en viktig del av økonomien.
 Og selv om vi kan være enige om at det er en næring som kommer til å være like viktig i fremtiden som i dag,
 er det ikke sikkert vi er like enige om alt på banen. Vi spør hvor mange kort blir delt ut?
- 
+Her har alle blitt enige om at ingen røde kort blir delt ut.
 
 ```{r irak_kort}
 
@@ -151,8 +410,13 @@ alle_spm |>
   # group_by(spm, tekst, svar) |> 
   # summarise(autograf = paste0(autograf,sep=", ")) |> 
   ggplot(aes(x=tekst)) +
-  geom_label(aes(y=svar, label = autograf, col=svar),
-             position = position_jitter(width = 0.2, height = 0.2)
+  # geom_label(aes(y=svar, label = autograf, col=svar),
+  #            position = position_jitter(width = 0.2, height = 0.2)
+  # ) +
+  
+  ggrepel::geom_label_repel(aes(y=svar,label = autograf,
+                 col=svar),
+             position = position_jitter(width = 0.4, height = 0.4)
              ) +
   xlab("") + ylab("") +
   theme_minimal() + theme(legend.position="none") +
@@ -205,7 +469,4 @@ alle_spm |>
 
 <!-- Her komme info om kor mange poeng folk har igjen å  få utdelt på spørsmålene som  -->
 <!-- ennå ikkje e delt ud. -->
-
-
-
 

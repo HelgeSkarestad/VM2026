@@ -6,7 +6,8 @@ library(janitor)
 
 
 # raw <- read_excel(here::here("data/spmogsvar.xlsx")) |>  clean_names()
-raw <- read_excel(here::here("data/260608-spmogsvar.xlsx")) |>  clean_names()
+# raw <- read_excel(here::here("data/260608-spmogsvar.xlsx")) |>  clean_names()
+raw <- read_excel(here::here("data/260611-spmogsvar.xlsx")) |>  clean_names()
 
 meta_cols <- names(raw)[1:8]
 smaaspoersmaal <- names(raw)[9:16]

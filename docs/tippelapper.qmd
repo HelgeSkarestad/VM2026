@@ -1,0 +1,53 @@
+---
+title: "&#x26BD; VM-tuppekunkurranse – Tippelapper &#127942;"
+author: "Helge & KI"
+format:
+  html:
+    toc: true
+    number-sections: true
+    mainfont: "Arial"
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+
+Her er link tilbake til rapporten:
+<a href="index.html">Hovedside</a>
+
+
+
+```{r dataprep}
+source(here::here("data/datavask.R"))
+```
+
+```{r tippelapper}
+spmtab <- tibble(spm="Klubblaget ditt",
+                   tekst="",
+                   poeng=NA) |> 
+  bind_rows(alle_spm |> 
+              distinct())
+# |> 
+  # flextable::flextable() |> 
+  # flextable::set_table_properties(layout = "autofit")
+
+svartab <- bind_rows(alle_svar|> 
+            filter(id!="Fasit") ,
+          metadata |> 
+            filter(id!="Fasit") |> 
+            select(id, svar = klubblaget_ditt) |> 
+            mutate(spm = "Klubblaget ditt")) |> 
+  left_join(metadata |> select(autograf,id), by = join_by(id)) |> 
+  select(-id) |> 
+pivot_wider(names_from=autograf, values_from=svar) 
+# |>
+  # flextable::flextable() |> 
+  # flextable::set_table_properties(layout = "autofit")
+
+spmtab |> left_join(svartab) |>
+  # arrange(spm) |> 
+  flextable::flextable() |>
+  flextable::set_table_properties(layout = "autofit") |> 
+  flextable::font(fontname="Arial",part="all")
+```
