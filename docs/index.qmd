@@ -19,6 +19,7 @@ Denne rapporten viser resultatene fra VM-tuppekunkurransen.
 Utrolig avansert analyse er anvendt for å tolke innsendte tippelapper. 
 Analysene tyter ut i figurer og tabeller i det følgende notatet. Si gjerne
 fra om du har forslag til analyser eller ser feil i dataene.
+Oppdaterte analyser kommer etter Irak-Norge.
 
 God lesning!
 
@@ -88,11 +89,11 @@ metainfo |>
                                    .default = "Etter fristen"
                                     )) |> 
   group_by(Leveringsdato) |> 
-  mutate(yakse = seq(0,1,length.out=n())) |>
+  mutate(yakse = seq(0,2,length.out=n())) |>
   ungroup() |> 
   ggplot(aes(x=Leveringsdato)) +
   geom_label(aes(y=yakse,label=autograf,col=Leveringsinfo),
-             position = position_jitter(width = 0.1, height = 0.3)) +
+             position = position_jitter(width = 0.1, height = 0.4)) +
   theme_minimal() +
   theme(legend.position = "bottom",
         legend.direction = "horizontal") +
@@ -180,23 +181,30 @@ Er vi enige om noe. Det viser seg at ja, jammen er vi det. Figuren viser spørsm
 hvor det er størst grad av enighet
 
 ```{r innledning_enighet}
+
 alle_spm |> 
   inner_join(like_svar,by = join_by(spm)) |>
   left_join(alle_svar,
             by = join_by(spm)) |> 
   left_join(metadata |> select(id,autograf)) |> 
   filter(id != "Fasit") |> 
-  ggplot(aes(x=tekst,y=svar)) +
-  ggrepel::geom_label_repel(aes(label = autograf,
+  ggplot(aes(x=tekst,y=svar,
+                 col=svar)) +
+  geom_point(size=1,alpha=0.5) +
+  geom_label(aes(label = autograf,
                  col=svar),
-             position = position_jitter(width = 0.3, height = 0.3)
-             ) +
+             position = position_jitter(width = 0.5, height = 0.5,seed = 123)) +
+
+  # ggrepel::geom_label_repel(aes(label = autograf),
+  #            position = position_jitter(width = 0.3, height = 0.3)
+  #            ) +
   scale_x_discrete(labels = wrap_2_lines) +
   xlab("") + ylab("") +
   theme_minimal() + theme(legend.position="none") +
   ggtitle(label = "Innledende spørsmål", subtitle = "Spørsmål med størst enighet")
 
 ```
+
 
 Men vi er også uenige om mye. Figuren viser spørsmål hvor vi har vært mest 
 delte i svarene.
@@ -239,6 +247,8 @@ Men formatet har ikke vært helt likt hele tiden:
 
 Dette betyr at ideen om grupper – der lag møtes flere ganger før utslagsrunder – har vært sentral i VM nesten helt siden starten.
 Har det noe å si for vår felles evne til å gjette på lagenes prestasjoner i gruppene?
+
+Dypdykk i hver gruppe kommer etter hvert som gruppespillet utfolder seg.
 
 
 ### Dypdykk gruppe A-D
@@ -321,10 +331,12 @@ alle_spm |>
   
   ggrepel::geom_label_repel(aes(y=svar,label = autograf,
                  col=svar),
-             position = position_jitter(width = 0.3, height = 0.1)
+             position = position_jitter(width = 0.4, height = 0.2)
              ) +
   xlab("") + ylab("") +
-  theme_minimal() + theme(legend.position="none") +
+  theme_minimal() + #theme(legend.position="none") +
+  theme(legend.position = "bottom",
+        legend.direction = "horizontal") +
   ggtitle(label = "Antall mål Irak-Norge", subtitle = "Saddam mot Jonas")
 ```
 
@@ -346,7 +358,7 @@ alle_spm |>
   
   ggrepel::geom_label_repel(aes(y=svar,label = autograf,
                  col=svar),
-             position = position_jitter(width = 0.3, height = 0.0)
+             position = position_jitter(width = 0.4, height = 0.2)
              ) +
   xlab("") + ylab("") +
   theme_minimal()+ theme(legend.position="none") +
@@ -377,7 +389,7 @@ alle_spm |>
   
   ggrepel::geom_label_repel(aes(y=svar,label = autograf,
                  col=svar),
-             position = position_jitter(width = 0.3, height = 0.3)
+             position = position_jitter(width = 0.4, height = 0.2)
              ) +
   xlab("") + ylab("") +
   theme_minimal() + theme(legend.position="none") +
@@ -387,7 +399,7 @@ alle_spm |>
 Til tross for utfordringene har Irak store naturressurser, spesielt olje, som er en viktig del av økonomien.
 Og selv om vi kan være enige om at det er en næring som kommer til å være like viktig i fremtiden som i dag,
 er det ikke sikkert vi er like enige om alt på banen. Vi spør hvor mange kort blir delt ut?
-
+Her har alle blitt enige om at ingen røde kort blir delt ut.
 
 ```{r irak_kort}
 
@@ -404,7 +416,7 @@ alle_spm |>
   
   ggrepel::geom_label_repel(aes(y=svar,label = autograf,
                  col=svar),
-             position = position_jitter(width = 0.3, height = 0.3)
+             position = position_jitter(width = 0.4, height = 0.4)
              ) +
   xlab("") + ylab("") +
   theme_minimal() + theme(legend.position="none") +
