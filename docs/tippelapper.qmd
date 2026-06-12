@@ -46,8 +46,19 @@ pivot_wider(names_from=autograf, values_from=svar)
   # flextable::set_table_properties(layout = "autofit")
 
 spmtab |> left_join(svartab) |>
+  mutate(spm = paste(spm,tekst)) |> 
+  select(-tekst) |> 
+  rename(Spørsmål = spm) |> 
   # arrange(spm) |> 
   flextable::flextable() |>
   flextable::set_table_properties(layout = "autofit") |> 
-  flextable::font(fontname="Arial",part="all")
+  flextable::font(fontname="Arial",part="all") |> 
+  flextable::bg(bg = "white", part = "header") |> 
+  flextable::bg(bg = "white", j=1) |> 
+  flextable::set_table_properties(opts_html = list(
+    scroll = list(
+      height = "500px",
+      freeze_first_column = TRUE
+    )
+  ))
 ```

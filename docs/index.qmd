@@ -81,23 +81,26 @@ Figuren viser når disse svarene har kommet inn. Mange har ventet i det lengste 
 å få inn så stort beslutningsgrunnlag som mulig. Andre har nok glemt å fylle ut.
 
 ```{r leveringsdato, include = TRUE}
+set.seed(27)
 metainfo |> 
   mutate(Leveringsdato = lubridate::date(fullforingstidspunkt),
          Leveringsinfo = case_when(fullforingstidspunkt < lubridate::mdy_h("06072026_21") ~ "Før Marokko-kampen",
                                    fullforingstidspunkt < lubridate::mdy_h("06092026_22") ~ "Før Eivind purra",
-                                   fullforingstidspunkt < lubridate::mdy_h("06112026_21") ~ "Etter Eivind purra ",
+                                   fullforingstidspunkt < lubridate::mdy_h("06112026_21") ~ "Etter Eivind purra",
                                    .default = "Etter fristen"
-                                    )) |> 
-  group_by(Leveringsdato) |> 
-  mutate(yakse = seq(0,2,length.out=n())) |>
+                                    ),
+         Leveringsinfo = factor(Leveringsinfo,levels = c("Før Marokko-kampen","Før Eivind purra","Etter Eivind purra","Etter fristen"))) |> 
+  group_by(Leveringsdato,Leveringsinfo) |> 
+  # mutate(yakse = seq(0,1,length.out=n())) |>
+  mutate(yakse = (1-1/n())*runif(n())) |>
   ungroup() |> 
-  ggplot(aes(x=Leveringsdato)) +
-  geom_label(aes(y=yakse,label=autograf,col=Leveringsinfo),
-             position = position_jitter(width = 0.1, height = 0.4)) +
+  ggplot(aes(x=Leveringsdato,y=yakse,col=Leveringsinfo)) +
+  geom_label(aes(label=autograf),size=3,label.padding = unit(0.15,"lines")) +
+  
+  # ggrepel::geom_label_repel(aes(label=autograf),size=3,label.padding = 0.15)+
   theme_minimal() +
   theme(legend.position = "bottom",
         legend.direction = "horizontal") +
-    guides(color = guide_legend(reverse = TRUE)) +
   scale_y_continuous(labels = NULL) + ylab("")
   # scale_x_continuous(labels=NULL) + xlab("")
 ```
@@ -110,41 +113,68 @@ På kveldstid, huskeregel: når munnteipen er på, skal vi unngå lyskilder som 
 ```{r leveringstid, include = FALSE}
 metainfo |> 
   group_by(`Utfylt klokkeslett`) |> 
-  mutate(yakse = seq(0,1,length.out=n())) |>
+  mutate(yakse = (1-1/n())*runif(n())) |>
   ungroup() |> 
-  ggplot(aes(x=yakse)) +
-  geom_label(aes(y=`Utfylt klokkeslett`,label=autograf, col=`Utfylt tidspunkt`),
-             position = position_jitter(width = 0.1, height = 0.0)) +
+  ggplot(aes(x=yakse,y=`Utfylt klokkeslett`,, col=`Utfylt tidspunkt`)) +
+  # geom_label(aes(y=`Utfylt klokkeslett`,label=autograf, col=`Utfylt tidspunkt`),
+  #            position = position_jitter(width = 0.1, height = 0.0),
+  #            size=3) +
+    ggrepel::geom_label_repel(aes(label=autograf),size=3,label.padding = 0.15)+
+
   theme_minimal() +
   scale_y_reverse() +
   theme(legend.position = "bottom",
         legend.direction = "horizontal") +
   scale_x_continuous(labels=NULL) + xlab("")
 ```
-
+<!--
+Ein luring som satt over halvaen time på do i arbeidstidå
+-->
 
 ```{r tidsbruk, include = FALSE}
 
 vek <- cut(metainfo$Tidsbruk, 
-    quantile(metainfo$Tidsbruk,probs=seq(0,1,length.out=4)), 
+    quantile(metainfo$Tidsbruk,probs=c(0,0.1,0.9,1)), 
     include.lowest = TRUE)
 levels(vek) <- c("Useriøst","Innafor","Fritidsproblem")
 
 metainfo$Tidskategori <- vek
 
-metainfo |> 
-  mutate(Tid = round(Tidsbruk,-1)) |> 
-  group_by(Tid) |> 
+metainfo |>
+  mutate(Tid = round(Tidsbruk,-1)) |>
+  group_by(Tid) |>
   mutate(yakse = seq(0,3,length.out=n())) |>
-  ungroup() |> 
-  ggplot(aes(x=Tidsbruk)) +
-  geom_label(aes(y=yakse,label=autograf, col=Tidskategori)) +
-  theme_minimal() + 
+  ungroup() |>
+  ggplot(aes(x=Tidsbruk,y=yakse, col=Tidskategori)) +
+  ggrepel::geom_label_repel(aes(label=autograf),size=3,label.padding = 0.15)+
+
+  theme_minimal() +
   theme(legend.position = "bottom",
         legend.direction = "horizontal") +
-  scale_y_continuous(labels = NULL) + ylab("") + xlab("Tidsbruk (Minutter)")
-  # scale_x_continuous(labels=NULL) + xlab("")
+  scale_y_continuous(labels = NULL) + ylab("") + xlab("Tidsbruk (Minutter, log10-skala)") +
+  scale_x_continuous(trans='log10')
+
 ```
+
+```{r tid_naar, include=FALSE}
+metainfo |> 
+  ggplot(aes(x=Tidsbruk,y=`Utfylt klokkeslett`, col=`Utfylt tidspunkt`)) +
+  # geom_label(aes(y=`Utfylt klokkeslett`,label=autograf, col=`Utfylt tidspunkt`),
+  #            position = position_jitter(width = 0.1, height = 0.0),
+  #            size=3) +
+    ggrepel::geom_label_repel(aes(label=autograf),size=3,label.padding = 0.15)+
+
+  theme_minimal() +
+  scale_y_reverse() +
+  theme(legend.position = "bottom",
+        legend.direction = "horizontal") +
+  scale_x_continuous(trans='log10') + xlab("Tidsbruk (minutter, log10-skala)") +
+  ggtitle(label = "Tidsbruk mot når på døgnet utfylt")
+
+```
+
+
+
 
 
 
@@ -169,36 +199,45 @@ ulike_svar <- interessante_spm|>
   slice(1:2)
   # slice(1:3)
 
+
 like_svar <- interessante_spm|> 
   arrange(-Sortering) |> 
   ungroup() |> 
   distinct(spm) |> 
   slice(1:2)
   # slice(1:3)
+
+
+ulike_svar <- tibble(spm = c("Q5","Q6"))
+like_svar <- tibble(spm = c("Q2","Q3"))
+
+
 ```
 
 Er vi enige om noe. Det viser seg at ja, jammen er vi det. Figuren viser spørsmål 
 hvor det er størst grad av enighet
 
 ```{r innledning_enighet}
-
 alle_spm |> 
   inner_join(like_svar,by = join_by(spm)) |>
   left_join(alle_svar,
             by = join_by(spm)) |> 
   left_join(metadata |> select(id,autograf)) |> 
   filter(id != "Fasit") |> 
-  ggplot(aes(x=tekst,y=svar,
-                 col=svar)) +
-  geom_point(size=1,alpha=0.5) +
-  geom_label(aes(label = autograf,
-                 col=svar),
-             position = position_jitter(width = 0.5, height = 0.5,seed = 123)) +
-
-  # ggrepel::geom_label_repel(aes(label = autograf),
-  #            position = position_jitter(width = 0.3, height = 0.3)
-  #            ) +
-  scale_x_discrete(labels = wrap_2_lines) +
+  mutate(theta = runif(n=n(),min=0,max=2*pi),
+         r = runif(n=n(),min=0.1,max=0.5),
+         xakse = case_when(spm=="Q2" ~ 0,
+                           .default = 1),
+         xakse = xakse + r*cos(theta),
+         yakse = case_when(svar=="Nei" ~ 1,
+                           .default = 0),
+         yakse = yakse + r*sin(theta)) |> 
+  ggplot(aes(x=xakse, y=yakse, col=svar)) +
+  # geom_label(aes(label = autograf),size = 3,) +
+ggrepel::geom_label_repel(aes(label=autograf),size=3,label.padding = 0.15)+
+  scale_y_continuous(breaks = c(0,1), labels = c("Ja","Nei")) +
+  scale_x_continuous(breaks=c(0,1),labels = c("Sander Berge får gult kort\n i lopet av mesterskapet",
+                                              "Det blir minst 4 røde kort\n totalt i gruppespillet"), limits = c(-0.5,1.5)) +
   xlab("") + ylab("") +
   theme_minimal() + theme(legend.position="none") +
   ggtitle(label = "Innledende spørsmål", subtitle = "Spørsmål med størst enighet")
@@ -210,25 +249,55 @@ Men vi er også uenige om mye. Figuren viser spørsmål hvor vi har vært mest
 delte i svarene.
 
 ```{r innledning_uenighet}
+# alle_spm |> 
+#   inner_join(ulike_svar,by = join_by(spm)) |>
+#   left_join(alle_svar,
+#             by = join_by(spm)) |> 
+#   left_join(metadata |> select(id,autograf)) |> 
+#   filter(id != "Fasit") |> 
+#   ggplot(aes(x=tekst,y=svar)) +
+#   # geom_label(aes(label = autograf,
+#   #                col=svar),
+#   #            position = position_jitter(width = 0.4, height = 0.4)) +
+#   
+#   ggrepel::geom_label_repel(aes(label = autograf,
+#                  col=svar),
+#              position = position_jitter(width = 0.3, height = 0.3)
+#              ) +
+#   scale_x_discrete(labels = wrap_2_lines) +
+#   xlab("") + ylab("") +
+#   theme_minimal() + theme(legend.position="none") +
+#   ggtitle(label = "Innledende spørsmål", subtitle = "Spørsmål med størst uenighet")
+
+
 alle_spm |> 
   inner_join(ulike_svar,by = join_by(spm)) |>
   left_join(alle_svar,
             by = join_by(spm)) |> 
   left_join(metadata |> select(id,autograf)) |> 
   filter(id != "Fasit") |> 
-  ggplot(aes(x=tekst,y=svar)) +
-  # geom_label(aes(label = autograf,
-  #                col=svar),
-  #            position = position_jitter(width = 0.4, height = 0.4)) +
-  
-  ggrepel::geom_label_repel(aes(label = autograf,
-                 col=svar),
-             position = position_jitter(width = 0.3, height = 0.3)
-             ) +
-  scale_x_discrete(labels = wrap_2_lines) +
+  mutate(theta = runif(n=n(),min=0,max=2*pi),
+         r = runif(n=n(),min=0.3,max=0.55),
+         xakse = case_when(spm=="Q5" ~ 0,
+                           .default = 2),
+         xakse = xakse + r*cos(theta),
+         yakse = case_when(svar=="Nei" ~ 1,
+                           .default = 0),
+         yakse = yakse + r*sin(theta)) |> 
+  ggplot(aes(x=xakse, y=yakse, col=svar)) +
+  # geom_label(aes(label = autograf),size = 3,) +
+  ggrepel::geom_label_repel(aes(label=autograf),size=3,label.padding = 0.15)+
+  scale_y_continuous(breaks = c(0,1),
+                     labels = c("Ja","Nei"),
+                     limits = c(-0.75,1.75)) +
+  scale_x_continuous(breaks=c(0,2),
+                     labels = c("Det scores mål innen det første minuttet\n i en kamp i hele mesterskapet",
+                                              "Norge scorer på hjørnespark \ni lopet av mesterskapet"),
+                     limits = c(-0.75,2.75)) +
   xlab("") + ylab("") +
   theme_minimal() + theme(legend.position="none") +
   ggtitle(label = "Innledende spørsmål", subtitle = "Spørsmål med størst uenighet")
+
 
 ```
 
@@ -318,26 +387,46 @@ Irak er et land i Midtøsten som ligger mellom Iran i øst og Syria og Jordan i 
 men hvor mange fulltreffere får vi i kampen? 
 
 ```{r irak_maal}
+set.seed(71)
 alle_spm |> 
   filter(spm %in% c("Q9","Q10")) |> 
   left_join(alle_svar |> filter(id!="Fasit"),by = join_by(spm)) |> 
-  left_join(metadata |>  select(id, autograf), by = join_by(id)) |> 
-  # group_by(spm, tekst, svar) |> 
-  # summarise(autograf = paste0(autograf,sep=", ")) |> 
-  ggplot(aes(x=tekst)) +
+  left_join(metadata |>  select(id, autograf), by = join_by(id))|> 
+  mutate(theta = runif(n=n(),min=0,max=2*pi),
+         r = runif(n=n(),min=0.3,max=0.6),
+         xakse = case_when(spm=="Q9" ~ 0,
+                           .default = 2),
+         xakse = xakse + r*cos(theta),
+         yakse = as.numeric(svar),
+         yakse = yakse + r*sin(theta),
+         `Antall mål` = svar) |> 
+  ggplot(aes(x=xakse, y=yakse, col=`Antall mål`)) +
   # geom_label(aes(y=svar, label = autograf, col=svar),
   #            position = position_jitter(width = 0.25, height = 0.25)
   # ) +
   
-  ggrepel::geom_label_repel(aes(y=svar,label = autograf,
-                 col=svar),
-             position = position_jitter(width = 0.4, height = 0.2)
-             ) +
+  ggrepel::geom_label_repel(aes(label = autograf),
+                            size=3,label.padding = 0.15,
+                            force=3) +
   xlab("") + ylab("") +
   theme_minimal() + #theme(legend.position="none") +
   theme(legend.position = "bottom",
         legend.direction = "horizontal") +
-  ggtitle(label = "Antall mål Irak-Norge", subtitle = "Saddam mot Jonas")
+  ggtitle(label = "Antall mål Irak-Norge", subtitle = "Saddam mot Jonas") +
+  scale_x_continuous(breaks=c(0,2),
+                     labels = c("Norge scorer",
+                                "Irak scorer"),
+                     # limits = c(-1,3)
+                     ) +
+  scale_y_continuous(breaks = seq(0,5),
+                     labels = c("0","1","2","3","4","5"),
+                     # limits = c(-1,4)
+                     )
+
+
+
+
+
 ```
 
 
@@ -356,8 +445,9 @@ alle_spm |>
   #            position = position_jitter(width = 0.4, height = 0.2)
   # ) +
   
-  ggrepel::geom_label_repel(aes(y=svar,label = autograf,
-                 col=svar),
+  ggrepel::geom_label_repel(aes(y=svar,label = autograf, col=svar),
+                            size=3,label.padding = 0.15,
+                            force=3,
              position = position_jitter(width = 0.4, height = 0.2)
              ) +
   xlab("") + ylab("") +
@@ -387,10 +477,8 @@ alle_spm |>
   #            position = position_jitter(width = 0.2, height = 0.2)
   # ) +
   
-  ggrepel::geom_label_repel(aes(y=svar,label = autograf,
-                 col=svar),
-             position = position_jitter(width = 0.4, height = 0.2)
-             ) +
+  ggrepel::geom_label_repel(aes(y=svar,label = autograf, col=svar),
+                            size=3,label.padding = 0.15, force=3) +
   xlab("") + ylab("") +
   theme_minimal() + theme(legend.position="none") +
   ggtitle("Antall cornere", subtitle = "Rima Iraki - Ræppa Norgi")
@@ -402,25 +490,30 @@ er det ikke sikkert vi er like enige om alt på banen. Vi spør hvor mange kort 
 Her har alle blitt enige om at ingen røde kort blir delt ut.
 
 ```{r irak_kort}
-
+set.seed(48)
 alle_spm |> 
   filter(spm %in% c("Q14","Q15")) |> 
   left_join(alle_svar |> filter(id!="Fasit"),by=join_by(spm)) |> 
   left_join(metadata |>  select(id, autograf)) |> 
-  # group_by(spm, tekst, svar) |> 
-  # summarise(autograf = paste0(autograf,sep=", ")) |> 
-  ggplot(aes(x=tekst)) +
-  # geom_label(aes(y=svar, label = autograf, col=svar),
-  #            position = position_jitter(width = 0.2, height = 0.2)
-  # ) +
-  
-  ggrepel::geom_label_repel(aes(y=svar,label = autograf,
-                 col=svar),
-             position = position_jitter(width = 0.4, height = 0.4)
-             ) +
+  mutate(theta = runif(n=n(),min=0,max=2*pi),
+         r = runif(n=n(),min=0.3,max=0.6),
+         xakse = case_when(spm=="Q15" ~ 0,
+                           .default = 2),
+         xakse = xakse + r*cos(theta),
+         yakse = as.numeric(svar),
+         yakse = yakse + r*sin(theta),
+         `Antall kort` = svar) |> 
+  ggplot(aes(x=xakse,y=yakse)) +
+  ggrepel::geom_label_repel(aes(label = autograf,col=svar),
+                 size=3,label.padding = 0.15, force=4) +
   xlab("") + ylab("") +
-  theme_minimal() + theme(legend.position="none") +
-  ggtitle("Antall kort", subtitle = "")
+  theme_minimal() +
+  theme(legend.position = "none") +
+  ggtitle("Antall kort", subtitle = "")+
+  scale_x_continuous(breaks=c(0,2),
+                     labels = c("Antall gule kort",
+                                "Antall røde kort"),
+                     limits = c(-1,3))
 ```
 
 

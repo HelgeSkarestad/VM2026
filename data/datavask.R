@@ -7,7 +7,7 @@ library(janitor)
 
 # raw <- read_excel(here::here("data/spmogsvar.xlsx")) |>  clean_names()
 # raw <- read_excel(here::here("data/260608-spmogsvar.xlsx")) |>  clean_names()
-raw <- read_excel(here::here("data/260611-spmogsvar.xlsx")) |>  clean_names()
+raw <- read_excel(here::here("data/260612-spmogsvar.xlsx")) |>  clean_names()
 
 meta_cols <- names(raw)[1:8]
 smaaspoersmaal <- names(raw)[9:16]
@@ -211,7 +211,8 @@ alle_svar <- smaaspoersmaal_svar |>
   left_join(naar_ryker_svar, by = join_by(id)) |> 
   left_join(finale_svar, by = join_by(id)) |> 
   left_join(avslutning_svar, by = join_by(id)) |> 
-  pivot_longer(starts_with("Q"), names_to = "spm", values_to="svar")
+  pivot_longer(starts_with("Q"), names_to = "spm", values_to="svar") |> 
+  replace_na(list(svar="Mangler svar"))
 
 alle_spm <- rbind(smaaspoersmaal_spm,
                   irak_spm,
@@ -243,14 +244,5 @@ alle_spm$tekst <- gsub(" riktig svar gir 5 poeng","", alle_spm$tekst)
 alle_spm$tekst <- gsub(" riktig svar gir 3 poeng","", alle_spm$tekst)
 alle_spm$tekst <- gsub(" riktig svar gir 2 poeng","", alle_spm$tekst)
 
-
-alle_svar |> 
-  filter(id!="Fasit") |> 
-  left_join(alle_svar |> 
-              filter(id=="Fasit") |>  
-              select(-id,
-                     spm,
-                     fasit=svar),
-            by = join_by(spm))
             
             
