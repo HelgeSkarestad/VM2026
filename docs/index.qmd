@@ -95,10 +95,9 @@ metainfo |>
   mutate(yakse = (1-1/n())*runif(n())) |>
   ungroup() |> 
   ggplot(aes(x=Leveringsdato,y=yakse,col=Leveringsinfo)) +
-  # geom_label(aes(label=autograf,
-             # position = position_jitter(width = 0.1, height = 0.4)) +
+  geom_label(aes(label=autograf),size=3,label.padding = unit(0.15,"lines")) +
   
-  ggrepel::geom_label_repel(aes(label=autograf),size=3,label.padding = 0.15)+
+  # ggrepel::geom_label_repel(aes(label=autograf),size=3,label.padding = 0.15)+
   theme_minimal() +
   theme(legend.position = "bottom",
         legend.direction = "horizontal") +
@@ -173,6 +172,9 @@ metainfo |>
   ggtitle(label = "Tidsbruk mot når på døgnet utfylt")
 
 ```
+
+
+
 
 
 
@@ -275,7 +277,7 @@ alle_spm |>
   left_join(metadata |> select(id,autograf)) |> 
   filter(id != "Fasit") |> 
   mutate(theta = runif(n=n(),min=0,max=2*pi),
-         r = runif(n=n(),min=0.3,max=0.5),
+         r = runif(n=n(),min=0.3,max=0.55),
          xakse = case_when(spm=="Q5" ~ 0,
                            .default = 2),
          xakse = xakse + r*cos(theta),
