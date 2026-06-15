@@ -50,6 +50,11 @@ jobs:
         shell: Rscript {0}
         continue-on-error: true
 
+      - name: Fix SARIF column numbers
+        run: |
+          jq 'walk(if type == "object" and has("startColumn") and .startColumn < 1 then .startColumn = 1 else . end)' lintr-results.sarif > lintr-results-fixed.sarif
+          mv lintr-results-fixed.sarif lintr-results.sarif
+
       - name: Upload analysis results to GitHub
         uses: github/codeql-action/upload-sarif@v3
         with:
