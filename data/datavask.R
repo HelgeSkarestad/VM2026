@@ -5,9 +5,7 @@ library(tidyr)
 library(janitor)
 
 
-# raw <- read_excel(here::here("data/spmogsvar.xlsx")) |>  clean_names()
-# raw <- read_excel(here::here("data/260608-spmogsvar.xlsx")) |>  clean_names()
-raw <- read_excel(here::here("data/260612-spmogsvar.xlsx")) |>  clean_names()
+raw <- read_excel(here::here("data/260612-spmogsvar.xlsx")) |> clean_names()
 
 meta_cols <- names(raw)[1:8]
 smaaspoersmaal <- names(raw)[9:16]
@@ -21,12 +19,12 @@ finale <- names(raw)[58:66]
 avslutning <- names(raw)[67:72]
 
 #### Tipping gruppespill ####
-smaaspoersmaal_ind <- seq(1, length(smaaspoersmaal))
+smaaspoersmaal_ind <- seq_along(smaaspoersmaal)
 smaaspoersmaal_poeng <- c(rep(1,7),2)
 smaaspoersmaal_spm <- smaaspoersmaal
 
-smaaspoersmaal_svar <- raw |> 
-  filter(!is.na(id)) |> 
+smaaspoersmaal_svar <- raw |>
+  filter(!is.na(id)) |>
   select(id,all_of(smaaspoersmaal))
 
 smaaspoersmaal_spm <- tibble(spm = paste0("Q",smaaspoersmaal_ind),
@@ -36,11 +34,11 @@ colnames(smaaspoersmaal_svar)[2:ncol(smaaspoersmaal_svar)] <- smaaspoersmaal_spm
 
 #### Irakkampen ####
 
-irak_ind <- max(smaaspoersmaal_ind) + 1:length(irak)
+irak_ind <- max(smaaspoersmaal_ind) + seq_along(irak)
 irak_poeng <- c(1,1,2,2,2,2,2)
 irak_spm <- irak
-irak_svar <- raw |> 
-  filter(!is.na(id)) |> 
+irak_svar <- raw |>
+  filter(!is.na(id)) |>
   select(id,all_of(irak))
 
 irak_spm <- tibble(spm = paste0("Q",irak_ind),
@@ -50,11 +48,11 @@ colnames(irak_svar)[2:ncol(irak_svar)] <- irak_spm$spm
 
 #### Senegal ####
 
-senegal_ind <- max(irak_ind) + 1:length(senegal)
+senegal_ind <- max(irak_ind) + seq_along(senegal)
 senegal_poeng <- c(1,1,2,2,2,2,2)
 senegal_spm <- senegal
-senegal_svar <- raw |> 
-  filter(!is.na(id)) |> 
+senegal_svar <- raw |>
+  filter(!is.na(id)) |>
   select(id,all_of(senegal))
 
 senegal_spm <- tibble(spm = paste0("Q",senegal_ind),
@@ -66,11 +64,11 @@ colnames(senegal_svar)[2:ncol(senegal_svar)] <- senegal_spm$spm
 
 #### Frankrike ####
 
-frankrike_ind <- max(senegal_ind) + 1:length(frankrike)
+frankrike_ind <- max(senegal_ind) + seq_along(frankrike)
 frankrike_poeng <- c(1,1,2,2,2,2,2)
 frankrike_spm <- frankrike
-frankrike_svar <- raw |> 
-  filter(!is.na(id)) |> 
+frankrike_svar <- raw |>
+  filter(!is.na(id)) |>
   select(id,all_of(frankrike))
 
 frankrike_spm <- tibble(spm = paste0("Q",frankrike_ind),
@@ -82,11 +80,11 @@ colnames(frankrike_svar)[2:ncol(frankrike_svar)] <- frankrike_spm$spm
 
 #### Jokerspm ####
 
-joker_ind <- max(frankrike_ind) + 1:length(joker)
-joker_poeng <- c(0)
+joker_ind <- max(frankrike_ind) + seq_along(joker)
+joker_poeng <- 0
 joker_spm <- joker
-joker_svar <- raw |> 
-  filter(!is.na(id)) |> 
+joker_svar <- raw |>
+  filter(!is.na(id)) |>
   select(id,all_of(joker))
 
 joker_spm <- tibble(spm = paste0("Q",joker_ind),
@@ -97,10 +95,10 @@ colnames(joker_svar)[2:ncol(joker_svar)] <- joker_spm$spm
 
 
 #### Gruppesortering ####
-grupper_spm <- raw |> 
-  select(id,all_of(grupper)) |> 
+grupper_spm <- raw |>
+  select(id,all_of(grupper)) |>
   rename_with(~LETTERS[1:12],
-              all_of(grupper)) |> 
+              all_of(grupper)) |>
   pivot_longer(
     cols = LETTERS[1:12],
     names_to = "question_id",
@@ -111,13 +109,13 @@ grupper_spm <- raw |>
     into = c("first", "second", "third", "fourth"),
     sep = ";",
     remove = FALSE
-  )  |>
+  ) |>
   mutate(across(c(first, second, third, fourth), str_trim)) |>
   pivot_longer(
     cols = c(first, second, third, fourth),
     names_to = "position",
     values_to = "team"
-  )|>
+  ) |>
   mutate(
     spm = case_match(question_id,
                      "A" ~ joker_ind + 1,
@@ -149,13 +147,13 @@ grupper_spm <- raw |>
 
 
 
-grupper_svar <- grupper_spm |> 
-  select(id,delspm, team) |> 
-  pivot_wider(names_from = delspm, values_from=team)
+grupper_svar <- grupper_spm |>
+  select(id,delspm, team) |>
+  pivot_wider(names_from = delspm, values_from = team)
 
-grupper_spm <- grupper_spm |> 
-  select(spm=delspm,
-         tekst = position) |> 
+grupper_spm <- grupper_spm |>
+  select(spm = delspm,
+         tekst = position) |>
   mutate(poeng = 1)
 
 
@@ -167,10 +165,10 @@ naar_ryker_spm <- tibble(spm = paste0("Q",43:49),
                          tekst = naar_ryker,
                          poeng = 3)
 
-naar_ryker_svar <- raw |> 
+naar_ryker_svar <- raw |>
   select(id,
-         all_of(naar_ryker)) |> 
-  filter(!is.na(id)) |> 
+         all_of(naar_ryker)) |>
+  filter(!is.na(id)) |>
   rename_with(~paste0("Q",43:49),
               all_of(naar_ryker))
 
@@ -180,8 +178,8 @@ finale_spm <- tibble(spm = paste0("Q",50:58),
                      tekst = finale,
                      poeng = c(5,rep(3,8)))
 
-finale_svar <- raw |> 
-  select(id,all_of(finale)) |> 
+finale_svar <- raw |>
+  select(id,all_of(finale)) |>
   filter(!is.na(id))
 colnames(finale_svar) <- c("id",paste0("Q",50:58))
 
@@ -193,26 +191,26 @@ avslutning_spm <- tibble(spm = paste0("Q",59:64),
                          tekst = avslutning,
                          poeng = c(rep(3,5),5))
 
-avslutning_svar <- raw |> 
-  select(id,all_of(avslutning)) |> 
-  filter(!is.na(id)) 
+avslutning_svar <- raw |>
+  select(id,all_of(avslutning)) |>
+  filter(!is.na(id))
 colnames(avslutning_svar) <- c("id",paste0("Q",59:64))
 
 
-#### Samlet data #### 
+#### Samlet data ####
 metadata <- raw |> select(all_of(meta_cols)) |> filter(!is.na(id))
 
-alle_svar <- smaaspoersmaal_svar |> 
-  left_join(irak_svar, by = join_by(id)) |> 
-  left_join(senegal_svar, by = join_by(id)) |> 
-  left_join(frankrike_svar, by = join_by(id)) |> 
-  left_join(joker_svar, by = join_by(id)) |> 
-  left_join(grupper_svar, by = join_by(id)) |> 
-  left_join(naar_ryker_svar, by = join_by(id)) |> 
-  left_join(finale_svar, by = join_by(id)) |> 
-  left_join(avslutning_svar, by = join_by(id)) |> 
-  pivot_longer(starts_with("Q"), names_to = "spm", values_to="svar") |> 
-  replace_na(list(svar="Mangler svar"))
+alle_svar <- smaaspoersmaal_svar |>
+  left_join(irak_svar, by = join_by(id)) |>
+  left_join(senegal_svar, by = join_by(id)) |>
+  left_join(frankrike_svar, by = join_by(id)) |>
+  left_join(joker_svar, by = join_by(id)) |>
+  left_join(grupper_svar, by = join_by(id)) |>
+  left_join(naar_ryker_svar, by = join_by(id)) |>
+  left_join(finale_svar, by = join_by(id)) |>
+  left_join(avslutning_svar, by = join_by(id)) |>
+  pivot_longer(starts_with("Q"), names_to = "spm", values_to = "svar") |>
+  replace_na(list(svar = "Mangler svar"))
 
 alle_spm <- rbind(smaaspoersmaal_spm,
                   irak_spm,
@@ -224,15 +222,15 @@ alle_spm <- rbind(smaaspoersmaal_spm,
                   finale_spm,
                   avslutning_spm)
 
-rm(list=c("avslutning", "avslutning_spm", "avslutning_svar", 
-          "finale", "finale_spm", "finale_svar", 
-          "frankrike", "frankrike_ind", "frankrike_poeng", "frankrike_spm", "frankrike_svar", 
-          "grupper", "grupper_spm", "grupper_svar", 
-          "irak", "irak_ind", "irak_poeng", "irak_spm", "irak_svar", 
-          "joker", "joker_ind", "joker_poeng", "joker_spm", "joker_svar", 
-          "meta_cols", "raw", 
-          "naar_ryker", "naar_ryker_spm", "naar_ryker_svar", 
-          "senegal", "senegal_ind", "senegal_poeng", "senegal_spm", "senegal_svar", 
+rm(list = c("avslutning", "avslutning_spm", "avslutning_svar",
+          "finale", "finale_spm", "finale_svar",
+          "frankrike", "frankrike_ind", "frankrike_poeng", "frankrike_spm", "frankrike_svar",
+          "grupper", "grupper_spm", "grupper_svar",
+          "irak", "irak_ind", "irak_poeng", "irak_spm", "irak_svar",
+          "joker", "joker_ind", "joker_poeng", "joker_spm", "joker_svar",
+          "meta_cols", "raw",
+          "naar_ryker", "naar_ryker_spm", "naar_ryker_svar",
+          "senegal", "senegal_ind", "senegal_poeng", "senegal_spm", "senegal_svar",
           "smaaspoersmaal", "smaaspoersmaal_ind", "smaaspoersmaal_poeng", "smaaspoersmaal_spm", "smaaspoersmaal_svar"))
 
 
@@ -243,6 +241,3 @@ alle_spm$tekst <- gsub(" riktig svar gir like mange poeng som norge far i gruppe
 alle_spm$tekst <- gsub(" riktig svar gir 5 poeng","", alle_spm$tekst)
 alle_spm$tekst <- gsub(" riktig svar gir 3 poeng","", alle_spm$tekst)
 alle_spm$tekst <- gsub(" riktig svar gir 2 poeng","", alle_spm$tekst)
-
-            
-            

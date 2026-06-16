@@ -1,0 +1,7 @@
+linters: linters_with_defaults(
+    undesirable_function_linter = undesirable_function_linter(
+        fun = default_undesirable_functions[
+            !names(default_undesirable_functions) %in% c("library", "require", "source")
+        ]
+    )
+)
