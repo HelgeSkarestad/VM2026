@@ -1,0 +1,51 @@
+linters: linters_with_tags(
+    tags = c(
+      # -----------------------------------------------------------------------
+      # Dette er kategoriene lintr sjekker for oss.
+      # -----------------------------------------------------------------------
+      "default",
+      "best_practices",
+      "consistency",
+      "readability",
+      "style",
+      "package_development",
+      "configurable",
+      "correctness",
+      "efficiency",
+      "executing",
+      "common_mistakes",
+      "robustness"
+    ),
+    # -------------------------------------------------------------------------
+    # De følgende lint'ene er slått av
+    # -------------------------------------------------------------------------
+    implicit_integer_linter        = NULL, # Veldig streng
+    object_usage_linter            = NULL, # Mange false positives
+    strings_as_factors_linter      = NULL, # Ikke så relevant for oss
+    fixed_regex_linter             = NULL, # Litt streng
+    nonportable_path_linter        = NULL, # Kan diskutere denne
+    object_name_linter             = NULL, # Litt streng - vurder senere
+    redundant_equals_linter        = NULL, # Flere false positives, vurder på sikt
+    todo_comment_linter            = NULL, # Vurder på sikt
+    expect_identical_linter        = NULL, # Vurder på sikt
+    keyword_quote_linter           = NULL, # En del false positives
+    commented_code_linter          = NULL,
+    pipe_consistency_linter        = NULL, # Inntil vi har gått over til base-pipe
+    one_call_pipe_linter           = NULL, # Ny lint, vurder på sikt
+    nested_pipe_linter             = NULL, # Ny lint, vurder på sikt
+    # -------------------------------------------------------------------------
+    # De følgende lint'ene har vi justert instillingene for
+    # -------------------------------------------------------------------------
+    line_length_linter            = line_length_linter(length = 85L),
+    object_length_linter          = object_length_linter(length = 40L),
+    duplicate_argument_linter     = duplicate_argument_linter(except = "mutate"),
+    redundant_ifelse_linter       = redundant_ifelse_linter(allow10 = TRUE)
+  )
+encoding: "UTF-8"
+exclusions: list(
+    # Disse filene/mappene lintes ikke
+    "renv",
+    "tests/testthat.R",
+    "tests/testthat/helper.r",
+    "tests/integrasjonstester/"
+  )
