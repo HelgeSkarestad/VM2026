@@ -5,8 +5,6 @@ library(tidyr)
 library(janitor)
 
 
-# raw <- read_excel(here::here("data/spmogsvar.xlsx")) |>  clean_names()
-# raw <- read_excel(here::here("data/260608-spmogsvar.xlsx")) |>  clean_names()
 raw <- read_excel(here::here("data/260612-spmogsvar.xlsx")) |>  clean_names()
 
 meta_cols <- names(raw)[1:8]
@@ -22,42 +20,42 @@ avslutning <- names(raw)[67:72]
 
 #### Tipping gruppespill ####
 smaaspoersmaal_ind <- seq(1, length(smaaspoersmaal))
-smaaspoersmaal_poeng <- c(rep(1,7),2)
+smaaspoersmaal_poeng <- c(rep(1, 7), 2)
 smaaspoersmaal_spm <- smaaspoersmaal
 
-smaaspoersmaal_svar <- raw |> 
-  filter(!is.na(id)) |> 
-  select(id,all_of(smaaspoersmaal))
+smaaspoersmaal_svar <- raw |>
+  filter(!is.na(id)) |>
+  select(id, all_of(smaaspoersmaal))
 
-smaaspoersmaal_spm <- tibble(spm = paste0("Q",smaaspoersmaal_ind),
+smaaspoersmaal_spm <- tibble(spm = paste0("Q", smaaspoersmaal_ind),
                              tekst = smaaspoersmaal_spm,
                              poeng = smaaspoersmaal_poeng)
-colnames(smaaspoersmaal_svar)[2:ncol(smaaspoersmaal_svar)] <- smaaspoersmaal_spm$spm
+colnames(smaaspoersmaal_svar)[
+  2:ncol(smaaspoersmaal_svar)] <- smaaspoersmaal_spm$spm
 
 #### Irakkampen ####
-
-irak_ind <- max(smaaspoersmaal_ind) + 1:length(irak)
-irak_poeng <- c(1,1,2,2,2,2,2)
+irak_ind <- max(smaaspoersmaal_ind) + seq_along(irak)
+irak_poeng <- c(1, 1 , 2 , 2 ,2, 2, 2)
 irak_spm <- irak
-irak_svar <- raw |> 
-  filter(!is.na(id)) |> 
-  select(id,all_of(irak))
+irak_svar <- raw |>
+  filter(!is.na(id)) |>
+  select(id, all_of(irak))
 
-irak_spm <- tibble(spm = paste0("Q",irak_ind),
+irak_spm <- tibble(spm = paste0("Q", irak_ind),
                    tekst = irak_spm,
                    poeng = irak_poeng)
 colnames(irak_svar)[2:ncol(irak_svar)] <- irak_spm$spm
 
 #### Senegal ####
 
-senegal_ind <- max(irak_ind) + 1:length(senegal)
-senegal_poeng <- c(1,1,2,2,2,2,2)
+senegal_ind <- max(irak_ind) + seq_along(senegal)
+senegal_poeng <- c(1, 1, 2, 2, 2, 2, 2)
 senegal_spm <- senegal
 senegal_svar <- raw |> 
   filter(!is.na(id)) |> 
   select(id,all_of(senegal))
 
-senegal_spm <- tibble(spm = paste0("Q",senegal_ind),
+senegal_spm <- tibble(spm = paste0("Q", senegal_ind),
                       tekst = senegal_spm,
                       poeng = senegal_poeng)
 colnames(senegal_svar)[2:ncol(senegal_svar)] <- senegal_spm$spm
@@ -66,11 +64,11 @@ colnames(senegal_svar)[2:ncol(senegal_svar)] <- senegal_spm$spm
 
 #### Frankrike ####
 
-frankrike_ind <- max(senegal_ind) + 1:length(frankrike)
+frankrike_ind <- max(senegal_ind) + seq_along(frankrike)
 frankrike_poeng <- c(1,1,2,2,2,2,2)
 frankrike_spm <- frankrike
-frankrike_svar <- raw |> 
-  filter(!is.na(id)) |> 
+frankrike_svar <- raw |>
+  filter(!is.na(id)) |>
   select(id,all_of(frankrike))
 
 frankrike_spm <- tibble(spm = paste0("Q",frankrike_ind),
@@ -82,14 +80,14 @@ colnames(frankrike_svar)[2:ncol(frankrike_svar)] <- frankrike_spm$spm
 
 #### Jokerspm ####
 
-joker_ind <- max(frankrike_ind) + 1:length(joker)
+joker_ind <- max(frankrike_ind) + seq_along(joker)
 joker_poeng <- c(0)
 joker_spm <- joker
-joker_svar <- raw |> 
-  filter(!is.na(id)) |> 
-  select(id,all_of(joker))
+joker_svar <- raw |>
+  filter(!is.na(id)) |>
+  select(id, all_of(joker))
 
-joker_spm <- tibble(spm = paste0("Q",joker_ind),
+joker_spm <- tibble(spm = paste0("Q", joker_ind),
                     tekst = joker_spm,
                     poeng = joker_poeng)
 colnames(joker_svar)[2:ncol(joker_svar)] <- joker_spm$spm
@@ -97,10 +95,10 @@ colnames(joker_svar)[2:ncol(joker_svar)] <- joker_spm$spm
 
 
 #### Gruppesortering ####
-grupper_spm <- raw |> 
-  select(id,all_of(grupper)) |> 
+grupper_spm <- raw |>
+  select(id, all_of(grupper)) |>
   rename_with(~LETTERS[1:12],
-              all_of(grupper)) |> 
+              all_of(grupper)) |>
   pivot_longer(
     cols = LETTERS[1:12],
     names_to = "question_id",
@@ -117,7 +115,7 @@ grupper_spm <- raw |>
     cols = c(first, second, third, fourth),
     names_to = "position",
     values_to = "team"
-  )|>
+  ) |>
   mutate(
     spm = case_match(question_id,
                      "A" ~ joker_ind + 1,
