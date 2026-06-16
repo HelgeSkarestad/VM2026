@@ -46,7 +46,11 @@ jobs:
           extra-packages: lintr
 
       - name: Run lintr
-        run: lintr::sarif_output(lintr::lint_dir("."), "lintr-results.sarif")
+        run: |
+          lintr::sarif_output(
+            lintr::lint_dir(".", pattern = "\\.[Rr](md)?$|\\.[Qq]md$"),
+            "lintr-results.sarif"
+          )
         shell: Rscript {0}
         continue-on-error: true
 
