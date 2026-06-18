@@ -5,7 +5,16 @@ library(tidyr)
 library(janitor)
 
 
-raw <- read_excel(here::here("data/260612-spmogsvar.xlsx")) |>  clean_names()
+svar <- read_excel(here::here("data/260612-spmogsvar.xlsx")) |>  clean_names()
+fasit <- read_excel(here::here("data/260618-fasit.xlsx")) |>  
+  clean_names() |> 
+  mutate(autograf = "Fasit")
+
+raw <- bind_rows(svar,
+                 fasit)
+
+
+
 
 meta_cols <- names(raw)[1:8]
 smaaspoersmaal <- names(raw)[9:16]
@@ -242,5 +251,14 @@ alle_spm$tekst <- gsub(" riktig svar gir 5 poeng","", alle_spm$tekst)
 alle_spm$tekst <- gsub(" riktig svar gir 3 poeng","", alle_spm$tekst)
 alle_spm$tekst <- gsub(" riktig svar gir 2 poeng","", alle_spm$tekst)
 
-            
-            
+
+
+alle_svar |> 
+  inner_join(metadata |> 
+               arrange(fullforingstidspunkt) |> 
+               filter(autograf == "Fasit") |> 
+               slice(n()) |> 
+               select(id)
+  ) |> 
+  select(spm, fasit = svar) |> 
+  View()
