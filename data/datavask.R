@@ -6,15 +6,21 @@ library(janitor)
 
 
 svar <- read_excel(here::here("data/260612-spmogsvar.xlsx")) |>  clean_names()
+
 fasit <- read_excel(here::here("data/260618-fasit.xlsx")) |>  
   clean_names() |> 
   mutate(autograf = "Fasit") |> 
   filter(fullforingstidspunkt > lubridate::mdy("06172026"))
 
+fasit <- cbind(fasit[,1:5],
+      tibble(tidspunkt_for_siste_endring=fasit$fullforingstidspunkt),
+      fasit[,6:ncol(fasit)])
+colnames(fasit) <- colnames(svar)
+
+
 raw <- bind_rows(svar,
                  fasit)
 rm(list=c("svar","fasit"))
-
 
 
 meta_cols <- names(raw)[1:8]
@@ -273,5 +279,7 @@ alle_spm$poeng[alle_spm$spm=="Q30"] <- as.numeric(gsub(" poeng","",alle_spm$`Fas
 alle_svar <- alle_svar |> 
   anti_join(fasit,
             by = join_by(id))
+
+alle_svar$svar[alle_svar$spm == "Q46" & alle_svar$id==11] <- "Svarte ikke"
 
 rm(list=c("fasitsvar","fasit"))

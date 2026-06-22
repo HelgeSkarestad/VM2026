@@ -30,11 +30,10 @@ Alle svar som er levert inn ligger her:
 <a href="tippelapper.html">Tippelapper</a>
 
 
-<!--
 Her er pekere til tidligere versjoner av rapporten:
 
 <a href="irakkampen.html">Før Irak-kampen</a>
--->
+
 
 
 
@@ -64,7 +63,7 @@ wrap_2_lines <- function(x, width = 30) {
 
 ```{r metainfo}
 metainfo <- metadata |> 
-  filter(id!="Fasit") |> 
+  filter(autograf!="Fasit") |> 
   mutate(`Utfylt klokkeslett` = lubridate::hour(starttidspunkt),
          Tidsbruk = fullforingstidspunkt-starttidspunkt,
          Tidsbruk = as.numeric(Tidsbruk),
@@ -76,11 +75,8 @@ metainfo <- metadata |>
                                          seq(21,23) ~ "Leggetid"))
 ```
 
-Vi har fått inn `r nrow(metainfo)` svar. 
-Figuren viser når disse svarene har kommet inn. Mange har ventet i det lengste for
-å få inn så stort beslutningsgrunnlag som mulig. Andre har nok glemt å fylle ut.
 
-```{r leveringsdato, include = TRUE}
+```{r leveringsdato, include = FALSE}
 set.seed(27)
 metainfo |> 
   mutate(Leveringsdato = lubridate::date(fullforingstidspunkt),
@@ -111,6 +107,7 @@ På kveldstid, huskeregel: når munnteipen er på, skal vi unngå lyskilder som 
 -->
 
 ```{r leveringstid, include = FALSE}
+set.seed(144)
 metainfo |> 
   group_by(`Utfylt klokkeslett`) |> 
   mutate(yakse = (1-1/n())*runif(n())) |>
@@ -156,7 +153,14 @@ metainfo |>
 
 ```
 
-```{r tid_naar, include=FALSE}
+
+Vi har fått inn `r nrow(metainfo)` svar. 
+Figuren viser hvor lang tid respondenten har brukt på utfylling og når på døgnet 
+dette er gjort. På grunn av at en person har brukt veldig over 100 minutter i arbeidstid,
+så er x-aksen på logaritmisk skala. Noen fylte også ut etter leggetid. Husk ordtaket 
+om at når munnteip er på, unngå skjermlys blå.
+
+```{r tid_naar, include=TRUE}
 metainfo |> 
   ggplot(aes(x=Tidsbruk,y=`Utfylt klokkeslett`, col=`Utfylt tidspunkt`)) +
   # geom_label(aes(y=`Utfylt klokkeslett`,label=autograf, col=`Utfylt tidspunkt`),
@@ -196,7 +200,7 @@ ulike_svar <- interessante_spm|>
   arrange(Sortering) |> 
   ungroup() |> 
   distinct(spm) |> 
-  slice(1:2)
+  slice(3:4)
   # slice(1:3)
 
 
@@ -204,12 +208,12 @@ like_svar <- interessante_spm|>
   arrange(-Sortering) |> 
   ungroup() |> 
   distinct(spm) |> 
-  slice(1:2)
+  slice(3:4)
   # slice(1:3)
 
 
-ulike_svar <- tibble(spm = c("Q5","Q6"))
-like_svar <- tibble(spm = c("Q2","Q3"))
+ulike_svar <- tibble(spm = c("Q1","Q4"))
+like_svar <- tibble(spm = c("Q7"))
 
 
 ```
@@ -236,8 +240,7 @@ alle_spm |>
   # geom_label(aes(label = autograf),size = 3,) +
 ggrepel::geom_label_repel(aes(label=autograf),size=3,label.padding = 0.15)+
   scale_y_continuous(breaks = c(0,1), labels = c("Ja","Nei")) +
-  scale_x_continuous(breaks=c(0,1),labels = c("Sander Berge får gult kort\n i lopet av mesterskapet",
-                                              "Det blir minst 4 røde kort\n totalt i gruppespillet"), limits = c(-0.5,1.5)) +
+  scale_x_continuous(breaks=c(1),labels = c("Er Donald Trump i publikum under en av norges kamper?"), limits = c(0.5,1.5)) +
   xlab("") + ylab("") +
   theme_minimal() + theme(legend.position="none") +
   ggtitle(label = "Innledende spørsmål", subtitle = "Spørsmål med størst enighet")
@@ -278,7 +281,7 @@ alle_spm |>
   filter(id != "Fasit") |> 
   mutate(theta = runif(n=n(),min=0,max=2*pi),
          r = runif(n=n(),min=0.3,max=0.55),
-         xakse = case_when(spm=="Q5" ~ 0,
+         xakse = case_when(spm=="Q1" ~ 0,
                            .default = 2),
          xakse = xakse + r*cos(theta),
          yakse = case_when(svar=="Nei" ~ 1,
@@ -291,8 +294,8 @@ alle_spm |>
                      labels = c("Ja","Nei"),
                      limits = c(-0.75,1.75)) +
   scale_x_continuous(breaks=c(0,2),
-                     labels = c("Det scores mål innen det første minuttet\n i en kamp i hele mesterskapet",
-                                              "Norge scorer på hjørnespark \ni lopet av mesterskapet"),
+                     labels = c("Norge scorer minst 5 mal \n i gruppespillett",
+                                              "det blir mer en 150 mal\n totalt i gruppespillet"),
                      limits = c(-0.75,2.75)) +
   xlab("") + ylab("") +
   theme_minimal() + theme(legend.position="none") +
@@ -303,24 +306,15 @@ alle_spm |>
 
 
 ## Gruppespill
-Praksisen med gruppespill i fotball-VM går faktisk helt tilbake til det aller første verdensmesterskapet i 1930.
-I VM i Uruguay i 1930 ble lagene delt inn i grupper (round robin), og gruppevinnerne gikk videre til semifinaler.
-Men formatet har ikke vært helt likt hele tiden:
-
-- 1934 og 1938: ingen gruppespill – kun utslagsturnering fra start.
-
-- 1950: gruppespillet kom tilbake (og finalen ble faktisk avgjort i en sluttgruppe).
-
-- Fra 1954 og utover: gruppespill + utslagsspill ble standardstrukturen som ligner det vi har i dag. 
-
-
-Dette betyr at ideen om grupper – der lag møtes flere ganger før utslagsrunder – har vært sentral i VM nesten helt siden starten.
-Har det noe å si for vår felles evne til å gjette på lagenes prestasjoner i gruppene?
+Ordet gruppe kommer opprinnelig fra det italienske ordet gruppo, som betyr en samling eller klump av ting eller personer. Dette ordet ble brukt innen kunst, særlig om flere figurer som er arrangert sammen i et bilde eller en skulptur.
+Fra italiensk spredte ordet seg til andre europeiske språk, blant annet fransk (groupe), før det ble tatt i bruk på norsk. I moderne norsk brukes gruppe om en samling personer eller elementer som hører sammen eller har noe felles, for eksempel en arbeidsgruppe eller en vennegjeng.
+Kort sagt har ordet utviklet seg fra å beskrive noe visuelt samlet, til å betegne en mer generell samling eller enhet.
 
 Dypdykk i hver gruppe kommer etter hvert som gruppespillet utfolder seg.
+Her ser vi på hvilke grupper av respondenter som har svart hva i hvilke grupper,
+gruppert etter antall. Det er til å bli svimmel av.
 
-
-### Dypdykk gruppe A-D
+### Dypdykk gruppe E-H
 
 ```{r gruppe_A_L}
 gruppesvar <- alle_spm |> 
@@ -345,10 +339,26 @@ Den neste tabellen viser et innblikk i grupperesultatene som var mest typiske og
 mest utypiske i tippekupongene. I den første tabellen vises de grupperesultatene 
 som flest har tippet. 
 
-```{r gruppe_A_D_mest_vanlig}
+```{r gruppe_A_D_mest_vanlig,include=FALSE}
 ft1 <- gruppesvar |> 
   # filter(Gruppe %in% LETTERS[1:12]) |>
   filter(Gruppe %in% LETTERS[1:4]) |>
+  slice(1) |> 
+  distinct() |> 
+  rename(`Mest vanlig rekkefølge` = Rekkefølge) |> 
+  select(-Antall) |> 
+  flextable::flextable()
+
+ft1 <- flextable::set_table_properties(ft1, layout = "autofit") |> 
+  flextable::font(fontname="Arial",part="all")
+
+ft1
+```
+
+```{r gruppe_E_H_mest_vanlig,include=TRUE}
+ft1 <- gruppesvar |> 
+  # filter(Gruppe %in% LETTERS[1:12]) |>
+  filter(Gruppe %in% LETTERS[5:8]) |>
   slice(1) |> 
   distinct() |> 
   rename(`Mest vanlig rekkefølge` = Rekkefølge) |> 
@@ -365,7 +375,7 @@ I den neste tabellen vises de grupperesultatene som færrest har valgt.
 Husk å si fra til de som har tippet mest idiotisk!
 
 
-```{r gruppe_A_D_mest_uvanlig}
+```{r gruppe_A_D_mest_uvanlig, include=FALSE}
 ft2 <- gruppesvar |> 
   # filter(Gruppe %in% LETTERS[1:12]) |>
   filter(Gruppe %in% LETTERS[1:4]) |>
@@ -378,23 +388,37 @@ ft2 <- flextable::set_table_properties(ft2, layout = "autofit") |>
   flextable::font(fontname="Arial",part="all")
 ft2
 ```
+```{r gruppe_E_H_mest_uvanlig, include=TRUE}
+ft2 <- gruppesvar |> 
+  # filter(Gruppe %in% LETTERS[1:12]) |>
+  filter(Gruppe %in% LETTERS[5:8]) |>
+  slice(n()) |> 
+  distinct() |> 
+  rename(`Mest uvanlige rekkefølge` = Rekkefølge) |> 
+  select(-Antall) |> 
+  flextable::flextable()
+ft2 <- flextable::set_table_properties(ft2, layout = "autofit") |> 
+  flextable::font(fontname="Arial",part="all")
+ft2
+```
 
 
 
-## Irak-kampen
+## Senegal-kampen
 
-Irak er et land i Midtøsten som ligger mellom Iran i øst og Syria og Jordan i vest. Landet har en lang og rik historie som går helt tilbake til oldtiden, da området var kjent som Mesopotamia – ofte omtalt som «sivilisasjonens vugge» fordi noen av verdens første byer, skriftspråk og lover oppsto her. Skriftspråk og lover er to av sivilisasjonens fulltreffere,
-men hvor mange fulltreffere får vi i kampen? 
+Senegal er et land i Vest-Afrika som ligger ved Atlanterhavet, og har grense til blant annet Mauritania, Mali og Guinea.
+Hovedstaden Dakar ligger ytterst på Kapp Verde-halvøya og er et viktig knutepunkt for handel, politikk og kultur i regionen. 
+Byen er kjent for sin livlige atmosfære, markeder og musikkmiljø. Livlig blir det utvilsomt når ballen går i mål.
 
-```{r irak_maal}
+```{r senegal_maal}
 set.seed(71)
 alle_spm |> 
-  filter(spm %in% c("Q9","Q10")) |> 
+  filter(spm %in% c("Q16","Q17")) |> 
   left_join(alle_svar |> filter(id!="Fasit"),by = join_by(spm)) |> 
   left_join(metadata |>  select(id, autograf), by = join_by(id))|> 
   mutate(theta = runif(n=n(),min=0,max=2*pi),
          r = runif(n=n(),min=0.3,max=0.6),
-         xakse = case_when(spm=="Q9" ~ 0,
+         xakse = case_when(spm=="Q16" ~ 0,
                            .default = 2),
          xakse = xakse + r*cos(theta),
          yakse = as.numeric(svar),
@@ -412,10 +436,10 @@ alle_spm |>
   theme_minimal() + #theme(legend.position="none") +
   theme(legend.position = "bottom",
         legend.direction = "horizontal") +
-  ggtitle(label = "Antall mål Irak-Norge", subtitle = "Saddam mot Jonas") +
+  ggtitle(label = "Antall mål Senegal-Norge") +
   scale_x_continuous(breaks=c(0,2),
                      labels = c("Norge scorer",
-                                "Irak scorer"),
+                                "Senegal scorer"),
                      # limits = c(-1,3)
                      ) +
   scale_y_continuous(breaks = seq(0,5),
@@ -423,19 +447,19 @@ alle_spm |>
                      # limits = c(-1,4)
                      )
 
-
-
-
-
 ```
 
 
-Hovedstaden i Irak er Bagdad, som også er landets største by. Irak har et variert landskap med store elver som Eufrat og Tigris, fruktbare sletter og ørkenområder. Disse elvene har vært avgjørende for jordbruk og bosetting gjennom tusenvis av år. Nå spør vi hvem som blir Norges første "innvandrer" på banen.
+Landet fikk sin uavhengighet fra Frankrike i 1960, og har siden vært regnet som et av de mest stabile demokratiene i Afrika. 
+Senegal har hatt flere fredelige maktoverganger, noe som skiller det fra mange andre land i regionen.
+Fransk er offisielt språk, men mange snakker også wolof og andre lokale språk i dagliglivet.
+Ingen av de norske spillerne snakker wolof, men hvem av innbytterne får mulighet 
+å snakke med føttene?
 
 
-```{r irak_innbytter}
+```{r senegal_innbytter}
 alle_spm |> 
-  filter(spm %in% c("Q11")) |> 
+  filter(spm %in% c("Q18")) |> 
   left_join(alle_svar |> filter(id!="Fasit"),by=join_by(spm)) |> 
   left_join(metadata |>  select(id, autograf)) |> 
   # group_by(spm, tekst, svar) |> 
@@ -452,22 +476,21 @@ alle_spm |>
              ) +
   xlab("") + ylab("") +
   theme_minimal()+ theme(legend.position="none") +
-  ggtitle("Første innbytter Irak-Norge")
+  ggtitle("Første innbytter Norge-Senegal")
 ```
 
 
 
+Kulturen i Senegal er rik og mangfoldig, med sterke tradisjoner innen musikk, dans og kunst.
+Spesielt er senegalesisk musikk, som mbalax, kjent både i Afrika og internasjonalt. 
+Den kjente sangeren Youssou N’Dour kommer fra Senegal. Landet er også kjent for sin varme gjestfrihet,
+ofte omtalt som teranga, som er en viktig del av den nasjonale identiteten.
 
-Befolkningen i Irak består hovedsakelig av arabere og kurdere, og de fleste er muslimer, 
-enten sunni eller sjia. Landet har de siste tiårene vært preget av konflikter og politisk uro,
-men det jobbes fortsatt med å bygge stabilitet og utvikling. 
-Den kurdiske delen av Irak ligger i nordøstre hjørnet. Hvor mange hjørnespark blir det i kampen? 
 
-
-```{r irak_cornere}
+```{r senegal_cornere}
 
 alle_spm |> 
-  filter(spm %in% c("Q12","Q13")) |> 
+  filter(spm %in% c("Q19","Q20")) |> 
   left_join(alle_svar |> filter(id!="Fasit"),by=join_by(spm)) |> 
   left_join(metadata |>  select(id, autograf)) |> 
   # group_by(spm, tekst, svar) |> 
@@ -481,26 +504,27 @@ alle_spm |>
                             size=3,label.padding = 0.15, force=3) +
   xlab("") + ylab("") +
   theme_minimal() + theme(legend.position="none") +
-  ggtitle("Antall cornere", subtitle = "Rima Iraki - Ræppa Norgi")
+  ggtitle("Antall cornere")
 ```
 
-Til tross for utfordringene har Irak store naturressurser, spesielt olje, som er en viktig del av økonomien.
-Og selv om vi kan være enige om at det er en næring som kommer til å være like viktig i fremtiden som i dag,
-er det ikke sikkert vi er like enige om alt på banen. Vi spør hvor mange kort blir delt ut?
-Her har alle blitt enige om at ingen røde kort blir delt ut.
+Økonomien i Senegal er basert på jordbruk, fiske, gruvedrift og turisme. Viktige eksportvarer inkluderer peanøtter, fisk og fosfat.
+Turister tiltrekkes blant annet av strender, nasjonalparker og historiske steder som øya Gorée, 
+som står på UNESCOs verdensarvliste på grunn av sin rolle i den transatlantiske slavehandelen.
+Vi gir kolonihistorien rødt kort. Hvor mange kort blir det i kampen?
 
-```{r irak_kort}
+```{r senegal_kort}
 set.seed(48)
 alle_spm |> 
-  filter(spm %in% c("Q14","Q15")) |> 
+  filter(spm %in% c("Q21","Q22")) |> 
   left_join(alle_svar |> filter(id!="Fasit"),by=join_by(spm)) |> 
   left_join(metadata |>  select(id, autograf)) |> 
   mutate(theta = runif(n=n(),min=0,max=2*pi),
          r = runif(n=n(),min=0.3,max=0.6),
-         xakse = case_when(spm=="Q15" ~ 0,
+         xakse = case_when(spm=="Q22" ~ 0,
                            .default = 2),
          xakse = xakse + r*cos(theta),
-         yakse = as.numeric(svar),
+         yakse = case_when(svar == "Flere" ~ 6,
+                           .default = as.numeric(svar)),
          yakse = yakse + r*sin(theta),
          `Antall kort` = svar) |> 
   ggplot(aes(x=xakse,y=yakse)) +
@@ -513,50 +537,74 @@ alle_spm |>
   scale_x_continuous(breaks=c(0,2),
                      labels = c("Antall gule kort",
                                 "Antall røde kort"),
-                     limits = c(-1,3))
+                     limits = c(-1,3)) +
+  scale_y_continuous(breaks = seq(0,6),
+                     labels = c("Ingen","1","2","3","4","5","Flere"))
 ```
 
 
 
-<!-- Håper du har lært noe spennende om Norges motstander. Nå skal vi lære litt om  -->
-<!-- hverandres motstand. Her er poenglistene: -->
+## Topp og bunnlister
 
+Håper du har lært noe spennende om Norges motstander. Nå skal vi lære litt om
+hverandres motstand. Her er poenglistene:
 
-<!-- ### Topp -->
-
-<!-- Her komme det tabell med de så har mest poeng -->
-
-<!-- ![](bilder/ebh.jpg) -->
-
-
-<!-- Edderkoppplott?? -->
-
-<!-- ### Bunn -->
-
-<!-- og minst poeng -->
-
-
-<!-- ![](bilder/ebh_oppgitt.jpg) -->
 
 ```{r leder}
-# ggplot(leaderboard, aes(x = reorder(Navn, Total), y = Total)) +
-#   geom_col(fill = "#2C7FB8") +
-#   coord_flip() +
-#   labs(
-#     title = "Rangering deltakere – VM-tipping",
-#     x = NULL,
-#     y = "Poeng"
-#   ) +
-#   geom_text(aes(label = Total), hjust = -0.2) +
-#   theme_minimal()
+library(png)
 
 
-# 
-# poeng_df %>%
-#   select(Navn, ends_with("_poeng"))
+resultat <- alle_svar |> left_join(alle_spm,
+                       by = join_by(spm)) |> 
+  left_join(metadata |> select(id,autograf),
+            by = join_by(id)) |> 
+  mutate(Poengfangst = poeng*(`Fasit 18.06.2026`==svar)) |> 
+  group_by(autograf) |> 
+  summarise(Poengfangst = sum(Poengfangst)) |> 
+  arrange(-Poengfangst)
 
+
+
+img_bra <- png::readPNG("bilder/ebh.png")
+img_grob_bra <- grid::rasterGrob(img_bra, interpolate = TRUE)
+
+
+img_daarlig <- png::readPNG("bilder/ebh_sint.png")
+img_grob_daarlig <- grid::rasterGrob(img_daarlig, interpolate = TRUE)
+
+
+
+resultat |> 
+  mutate(tekst = "Poengfangst") |> 
+  ggplot(aes(x=tekst))  +
+  theme_minimal() + theme(legend.position="none") +
+  annotation_custom(
+    grob = img_grob_bra,
+    xmin = 1,
+    # xmax = 1.5,
+    ymin = 7.5,
+    # ymax = 9
+  )+
+  annotation_custom(
+    grob = img_grob_daarlig,
+    xmin = -0.5,
+    # xmax = 1.5,
+    ymin = 3.0,
+    ymax = 5
+  )+
+  ggrepel::geom_label_repel(aes(y=Poengfangst,label = autograf, col=Poengfangst),
+                            size=3,label.padding = 0.15, force=3) +
+  xlab("") + ylab("") +
+  ggtitle("Antall poeng totalt")
+
+  
+
+
+  
 
 ```
+
+
 
 <!-- ## Poeng som gjenstår å spela om -->
 
