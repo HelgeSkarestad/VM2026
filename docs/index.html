@@ -52,9 +52,10 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#innledning" id="toc-innledning" class="nav-link" data-scroll-target="#innledning"><span class="header-section-number">2</span> Innledning</a></li>
   <li><a href="#gruppespill" id="toc-gruppespill" class="nav-link" data-scroll-target="#gruppespill"><span class="header-section-number">3</span> Gruppespill</a>
   <ul class="collapse">
-  <li><a href="#dypdykk-gruppe-a-d" id="toc-dypdykk-gruppe-a-d" class="nav-link" data-scroll-target="#dypdykk-gruppe-a-d"><span class="header-section-number">3.1</span> Dypdykk gruppe A-D</a></li>
+  <li><a href="#dypdykk-gruppe-e-h" id="toc-dypdykk-gruppe-e-h" class="nav-link" data-scroll-target="#dypdykk-gruppe-e-h"><span class="header-section-number">3.1</span> Dypdykk gruppe E-H</a></li>
   </ul></li>
-  <li><a href="#irak-kampen" id="toc-irak-kampen" class="nav-link" data-scroll-target="#irak-kampen"><span class="header-section-number">4</span> Irak-kampen</a></li>
+  <li><a href="#senegal-kampen" id="toc-senegal-kampen" class="nav-link" data-scroll-target="#senegal-kampen"><span class="header-section-number">4</span> Senegal-kampen</a></li>
+  <li><a href="#topp-og-bunnlister" id="toc-topp-og-bunnlister" class="nav-link" data-scroll-target="#topp-og-bunnlister"><span class="header-section-number">5</span> Topp og bunnlister</a></li>
   </ul>
 </nav>
 </div>
@@ -88,27 +89,14 @@ ul.task-list li input[type="checkbox"] {
 <p><img src="bilder/fifa.jpg" class="img-fluid"></p>
 <p>Denne rapporten viser resultatene fra VM-tuppekunkurransen. Utrolig avansert analyse er anvendt for å tolke innsendte tippelapper. Analysene tyter ut i figurer og tabeller i det følgende notatet. Si gjerne fra om du har forslag til analyser eller ser feil i dataene. Oppdaterte analyser kommer etter Irak-Norge.</p>
 <p>God lesning!</p>
-<p>Notatet er oppdatert 12. juni 2026</p>
+<p>Notatet er oppdatert 22. juni 2026</p>
 <p>Alle svar som er levert inn ligger her: <a href="tippelapper.html">Tippelapper</a></p>
-<!--
-Her er pekere til tidligere versjoner av rapporten:
-
-<a href="irakkampen.html">Før Irak-kampen</a>
--->
+<p>Her er pekere til tidligere versjoner av rapporten:</p>
+<p><a href="irakkampen.html">Før Irak-kampen</a></p>
 <section id="datagrunnlag" class="level2" data-number="1">
 <h2 data-number="1" class="anchored" data-anchor-id="datagrunnlag"><span class="header-section-number">1</span> Datagrunnlag</h2>
 <p><img src="bilder/lagbilde.jpg" class="img-fluid"></p>
 <p>Her kommer det sylskarpe analyser av svarene som er sendt inn. Analysene handler mest om å sette opp foreløpig stilling i tippekonkurransen, holde motet oppe for de som ikke har fått så mange rett foreløpig og å la de som har tippet ulikt få vite det. Den siste kan kanskje generere små bets foran TV-skjermen?</p>
-<p>Vi har fått inn 19 svar. Figuren viser når disse svarene har kommet inn. Mange har ventet i det lengste for å få inn så stort beslutningsgrunnlag som mulig. Andre har nok glemt å fylle ut.</p>
-<div class="cell">
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="index_files/figure-html/leveringsdato-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
 <!-- 
 Utfylling i tradisjonell arbeidstid er også vanlig 
 På kveldstid, huskeregel: når munnteipen er på, skal vi unngå lyskilder som er blå. 
@@ -116,6 +104,16 @@ På kveldstid, huskeregel: når munnteipen er på, skal vi unngå lyskilder som 
 <!--
 Ein luring som satt over halvaen time på do i arbeidstidå
 -->
+<p>Vi har fått inn 19 svar. Figuren viser hvor lang tid respondenten har brukt på utfylling og når på døgnet dette er gjort. På grunn av at en person har brukt veldig over 100 minutter i arbeidstid, så er x-aksen på logaritmisk skala. Noen fylte også ut etter leggetid. Husk ordtaket om at når munnteip er på, unngå skjermlys blå.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/tid_naar-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
 </section>
 <section id="innledning" class="level2" data-number="2">
 <h2 data-number="2" class="anchored" data-anchor-id="innledning"><span class="header-section-number">2</span> Innledning</h2>
@@ -142,81 +140,79 @@ Ein luring som satt over halvaen time på do i arbeidstidå
 </section>
 <section id="gruppespill" class="level2" data-number="3">
 <h2 data-number="3" class="anchored" data-anchor-id="gruppespill"><span class="header-section-number">3</span> Gruppespill</h2>
-<p>Praksisen med gruppespill i fotball-VM går faktisk helt tilbake til det aller første verdensmesterskapet i 1930. I VM i Uruguay i 1930 ble lagene delt inn i grupper (round robin), og gruppevinnerne gikk videre til semifinaler. Men formatet har ikke vært helt likt hele tiden:</p>
-<ul>
-<li><p>1934 og 1938: ingen gruppespill – kun utslagsturnering fra start.</p></li>
-<li><p>1950: gruppespillet kom tilbake (og finalen ble faktisk avgjort i en sluttgruppe).</p></li>
-<li><p>Fra 1954 og utover: gruppespill + utslagsspill ble standardstrukturen som ligner det vi har i dag.</p></li>
-</ul>
-<p>Dette betyr at ideen om grupper – der lag møtes flere ganger før utslagsrunder – har vært sentral i VM nesten helt siden starten. Har det noe å si for vår felles evne til å gjette på lagenes prestasjoner i gruppene?</p>
-<p>Dypdykk i hver gruppe kommer etter hvert som gruppespillet utfolder seg.</p>
-<section id="dypdykk-gruppe-a-d" class="level3" data-number="3.1">
-<h3 data-number="3.1" class="anchored" data-anchor-id="dypdykk-gruppe-a-d"><span class="header-section-number">3.1</span> Dypdykk gruppe A-D</h3>
+<p>Ordet gruppe kommer opprinnelig fra det italienske ordet gruppo, som betyr en samling eller klump av ting eller personer. Dette ordet ble brukt innen kunst, særlig om flere figurer som er arrangert sammen i et bilde eller en skulptur. Fra italiensk spredte ordet seg til andre europeiske språk, blant annet fransk (groupe), før det ble tatt i bruk på norsk. I moderne norsk brukes gruppe om en samling personer eller elementer som hører sammen eller har noe felles, for eksempel en arbeidsgruppe eller en vennegjeng. Kort sagt har ordet utviklet seg fra å beskrive noe visuelt samlet, til å betegne en mer generell samling eller enhet.</p>
+<p>Dypdykk i hver gruppe kommer etter hvert som gruppespillet utfolder seg. Her ser vi på hvilke grupper av respondenter som har svart hva i hvilke grupper, gruppert etter antall. Det er til å bli svimmel av.</p>
+<section id="dypdykk-gruppe-e-h" class="level3" data-number="3.1">
+<h3 data-number="3.1" class="anchored" data-anchor-id="dypdykk-gruppe-e-h"><span class="header-section-number">3.1</span> Dypdykk gruppe E-H</h3>
 <p>Den neste tabellen viser et innblikk i grupperesultatene som var mest typiske og mest utypiske i tippekupongene. I den første tabellen vises de grupperesultatene som flest har tippet.</p>
 <div class="cell">
 <div class="cell-output-display">
-<div class="tabwid"><style>.cl-071a1188{table-layout:auto;}.cl-0710ad46{font-family:'Arial';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-071469d6{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-0714930c{background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-07149320{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-0714932a{background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-071a1188"><thead><tr style="overflow-wrap:break-word;"><th class="cl-0714930c"><p class="cl-071469d6"><span class="cl-0710ad46">Gruppe</span></p></th><th class="cl-0714930c"><p class="cl-071469d6"><span class="cl-0710ad46">Mest vanlig rekkefølge</span></p></th><th class="cl-0714930c"><p class="cl-071469d6"><span class="cl-0710ad46">Hvem</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-07149320"><p class="cl-071469d6"><span class="cl-0710ad46">A</span></p></td><td class="cl-07149320"><p class="cl-071469d6"><span class="cl-0710ad46">Mexico, Sør-Korea, Tsjekkia, Sør-Afrika</span></p></td><td class="cl-07149320"><p class="cl-071469d6"><span class="cl-0710ad46">Hans B, Filip Trzos-Oftedal, Kim Dae Suk, Havnen!, Mathias Jesman Sunde, Aguacate positivo, Pjakinho - Bangkok FC, Stråmann, Bøgvall Kai, Vikka luff, Lamine Olav</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-07149320"><p class="cl-071469d6"><span class="cl-0710ad46">B</span></p></td><td class="cl-07149320"><p class="cl-071469d6"><span class="cl-0710ad46">Sveits, Bosnia-Hercegovina, Canada, Qatar</span></p></td><td class="cl-07149320"><p class="cl-071469d6"><span class="cl-0710ad46">Hans B, Olelor, Filip Trzos-Oftedal, BS Lorentzen, Havnen!, Mathias Jesman Sunde, Espen, Pjakinho - Bangkok FC</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-07149320"><p class="cl-071469d6"><span class="cl-0710ad46">C</span></p></td><td class="cl-07149320"><p class="cl-071469d6"><span class="cl-0710ad46">Brasil, Marokko, Skottland, Haiti</span></p></td><td class="cl-07149320"><p class="cl-071469d6"><span class="cl-0710ad46">Eika, Helge S, BS Lorentzen, Kim Dae Suk, Havnen!, Espen, Aguacate positivo, Pjakinho - Bangkok FC, Stråmann, Bøgvall Kai, Vikka luff, Lamine Olav</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-0714932a"><p class="cl-071469d6"><span class="cl-0710ad46">D</span></p></td><td class="cl-0714932a"><p class="cl-071469d6"><span class="cl-0710ad46">Tyrkia, USA, Paraguay, Australia</span></p></td><td class="cl-0714932a"><p class="cl-071469d6"><span class="cl-0710ad46">Hans B, Helge S, Kim Dae Suk, Aguacate positivo, Stråmann</span></p></td></tr></tbody></table></div>
+<div class="tabwid"><style>.cl-7344345c{table-layout:auto;}.cl-733d71bc{font-family:'Arial';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-73404f18{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-734070f6{background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-73407100{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-73407101{background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-7344345c"><thead><tr style="overflow-wrap:break-word;"><th class="cl-734070f6"><p class="cl-73404f18"><span class="cl-733d71bc">Gruppe</span></p></th><th class="cl-734070f6"><p class="cl-73404f18"><span class="cl-733d71bc">Mest vanlig rekkefølge</span></p></th><th class="cl-734070f6"><p class="cl-73404f18"><span class="cl-733d71bc">Hvem</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-73407100"><p class="cl-73404f18"><span class="cl-733d71bc">E</span></p></td><td class="cl-73407100"><p class="cl-73404f18"><span class="cl-733d71bc">Tyskland, Ecuador, Elfenbenskysten, Curaçao</span></p></td><td class="cl-73407100"><p class="cl-73404f18"><span class="cl-733d71bc">Eika, BS Lorentzen, Kim Dae Suk, Espen, Pjakinho - Bangkok FC, Stråmann, Bøgvall Kai, Vikka luff</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-73407100"><p class="cl-73404f18"><span class="cl-733d71bc">F</span></p></td><td class="cl-73407100"><p class="cl-73404f18"><span class="cl-733d71bc">Nederland, Japan, Sverige, Tunisia</span></p></td><td class="cl-73407100"><p class="cl-73404f18"><span class="cl-733d71bc">Eika, C-rabbel rabbel, Kim Dae Suk, Havnen!, Mathias Jesman Sunde, Pjakinho - Bangkok FC, Tann-Erik, Lamine Olav</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-73407100"><p class="cl-73404f18"><span class="cl-733d71bc">G</span></p></td><td class="cl-73407100"><p class="cl-73404f18"><span class="cl-733d71bc">Belgia, Egypt, Iran, New Zealand</span></p></td><td class="cl-73407100"><p class="cl-73404f18"><span class="cl-733d71bc">Hans B, Helge S, Filip Trzos-Oftedal, Ei-vind, Mathias Jesman Sunde, Espen, Pjakinho - Bangkok FC, Stråmann, Vikka luff</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-73407101"><p class="cl-73404f18"><span class="cl-733d71bc">H</span></p></td><td class="cl-73407101"><p class="cl-73404f18"><span class="cl-733d71bc">Spania, Uruguay, Saudi-Arabia, Kapp Verde</span></p></td><td class="cl-73407101"><p class="cl-73404f18"><span class="cl-733d71bc">Hans B, Eika, Helge S, Olelor, Filip Trzos-Oftedal, BS Lorentzen, Kim Dae Suk, Havnen!, Mathias Jesman Sunde, Espen, Aguacate positivo, Stråmann, Bøgvall Kai, Vikka luff, Tann-Erik, Lamine Olav</span></p></td></tr></tbody></table></div>
 </div>
 </div>
 <p>I den neste tabellen vises de grupperesultatene som færrest har valgt. Husk å si fra til de som har tippet mest idiotisk!</p>
 <div class="cell">
 <div class="cell-output-display">
-<div class="tabwid"><style>.cl-07312d6e{table-layout:auto;}.cl-07299a68{font-family:'Arial';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-072ce718{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-072d096e{background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-072d0978{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-072d0982{background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-07312d6e"><thead><tr style="overflow-wrap:break-word;"><th class="cl-072d096e"><p class="cl-072ce718"><span class="cl-07299a68">Gruppe</span></p></th><th class="cl-072d096e"><p class="cl-072ce718"><span class="cl-07299a68">Mest uvanlige rekkefølge</span></p></th><th class="cl-072d096e"><p class="cl-072ce718"><span class="cl-07299a68">Hvem</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-072d0978"><p class="cl-072ce718"><span class="cl-07299a68">A</span></p></td><td class="cl-072d0978"><p class="cl-072ce718"><span class="cl-07299a68">Mexico, Tsjekkia, Sør-Afrika, Sør-Korea</span></p></td><td class="cl-072d0978"><p class="cl-072ce718"><span class="cl-07299a68">C-rabbel rabbel</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-072d0978"><p class="cl-072ce718"><span class="cl-07299a68">B</span></p></td><td class="cl-072d0978"><p class="cl-072ce718"><span class="cl-07299a68">Sveits, Qatar, Bosnia-Hercegovina, Canada</span></p></td><td class="cl-072d0978"><p class="cl-072ce718"><span class="cl-07299a68">Eika</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-072d0978"><p class="cl-072ce718"><span class="cl-07299a68">C</span></p></td><td class="cl-072d0978"><p class="cl-072ce718"><span class="cl-07299a68">Brasil, Marokko, Haiti, Skottland</span></p></td><td class="cl-072d0978"><p class="cl-072ce718"><span class="cl-07299a68">Ei-vind</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-072d0982"><p class="cl-072ce718"><span class="cl-07299a68">D</span></p></td><td class="cl-072d0982"><p class="cl-072ce718"><span class="cl-07299a68">USA, Paraguay, Tyrkia, Australia</span></p></td><td class="cl-072d0982"><p class="cl-072ce718"><span class="cl-07299a68">Vikka luff</span></p></td></tr></tbody></table></div>
+<div class="tabwid"><style>.cl-736ae17e{table-layout:auto;}.cl-73645570{font-family:'Arial';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-7367220a{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-7367408c{background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-73674096{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-736740a0{background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-736ae17e"><thead><tr style="overflow-wrap:break-word;"><th class="cl-7367408c"><p class="cl-7367220a"><span class="cl-73645570">Gruppe</span></p></th><th class="cl-7367408c"><p class="cl-7367220a"><span class="cl-73645570">Mest uvanlige rekkefølge</span></p></th><th class="cl-7367408c"><p class="cl-7367220a"><span class="cl-73645570">Hvem</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-73674096"><p class="cl-7367220a"><span class="cl-73645570">E</span></p></td><td class="cl-73674096"><p class="cl-7367220a"><span class="cl-73645570">Ecuador, Tyskland, Elfenbenskysten, Curaçao</span></p></td><td class="cl-73674096"><p class="cl-7367220a"><span class="cl-73645570">Ei-vind</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-73674096"><p class="cl-7367220a"><span class="cl-73645570">F</span></p></td><td class="cl-73674096"><p class="cl-7367220a"><span class="cl-73645570">Nederland, Tunisia, Japan, Sverige</span></p></td><td class="cl-73674096"><p class="cl-7367220a"><span class="cl-73645570">Hans B, Helge S</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-73674096"><p class="cl-7367220a"><span class="cl-73645570">G</span></p></td><td class="cl-73674096"><p class="cl-7367220a"><span class="cl-73645570">Egypt, Iran, Belgia, New Zealand</span></p></td><td class="cl-73674096"><p class="cl-7367220a"><span class="cl-73645570">BS Lorentzen</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-736740a0"><p class="cl-7367220a"><span class="cl-73645570">H</span></p></td><td class="cl-736740a0"><p class="cl-7367220a"><span class="cl-73645570">Spania, Uruguay, Kapp Verde, Saudi-Arabia</span></p></td><td class="cl-736740a0"><p class="cl-7367220a"><span class="cl-73645570">Ei-vind, C-rabbel rabbel, Pjakinho - Bangkok FC</span></p></td></tr></tbody></table></div>
 </div>
 </div>
 </section>
 </section>
-<section id="irak-kampen" class="level2" data-number="4">
-<h2 data-number="4" class="anchored" data-anchor-id="irak-kampen"><span class="header-section-number">4</span> Irak-kampen</h2>
-<p>Irak er et land i Midtøsten som ligger mellom Iran i øst og Syria og Jordan i vest. Landet har en lang og rik historie som går helt tilbake til oldtiden, da området var kjent som Mesopotamia – ofte omtalt som «sivilisasjonens vugge» fordi noen av verdens første byer, skriftspråk og lover oppsto her. Skriftspråk og lover er to av sivilisasjonens fulltreffere, men hvor mange fulltreffere får vi i kampen?</p>
+<section id="senegal-kampen" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="senegal-kampen"><span class="header-section-number">4</span> Senegal-kampen</h2>
+<p>Senegal er et land i Vest-Afrika som ligger ved Atlanterhavet, og har grense til blant annet Mauritania, Mali og Guinea. Hovedstaden Dakar ligger ytterst på Kapp Verde-halvøya og er et viktig knutepunkt for handel, politikk og kultur i regionen. Byen er kjent for sin livlige atmosfære, markeder og musikkmiljø. Livlig blir det utvilsomt når ballen går i mål.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/irak_maal-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/senegal_maal-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
-<p>Hovedstaden i Irak er Bagdad, som også er landets største by. Irak har et variert landskap med store elver som Eufrat og Tigris, fruktbare sletter og ørkenområder. Disse elvene har vært avgjørende for jordbruk og bosetting gjennom tusenvis av år. Nå spør vi hvem som blir Norges første “innvandrer” på banen.</p>
+<p>Landet fikk sin uavhengighet fra Frankrike i 1960, og har siden vært regnet som et av de mest stabile demokratiene i Afrika. Senegal har hatt flere fredelige maktoverganger, noe som skiller det fra mange andre land i regionen. Fransk er offisielt språk, men mange snakker også wolof og andre lokale språk i dagliglivet. Ingen av de norske spillerne snakker wolof, men hvem av innbytterne får mulighet å snakke med føttene?</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/irak_innbytter-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/senegal_innbytter-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
-<p>Befolkningen i Irak består hovedsakelig av arabere og kurdere, og de fleste er muslimer, enten sunni eller sjia. Landet har de siste tiårene vært preget av konflikter og politisk uro, men det jobbes fortsatt med å bygge stabilitet og utvikling. Den kurdiske delen av Irak ligger i nordøstre hjørnet. Hvor mange hjørnespark blir det i kampen?</p>
+<p>Kulturen i Senegal er rik og mangfoldig, med sterke tradisjoner innen musikk, dans og kunst. Spesielt er senegalesisk musikk, som mbalax, kjent både i Afrika og internasjonalt. Den kjente sangeren Youssou N’Dour kommer fra Senegal. Landet er også kjent for sin varme gjestfrihet, ofte omtalt som teranga, som er en viktig del av den nasjonale identiteten.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/irak_cornere-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/senegal_cornere-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
-<p>Til tross for utfordringene har Irak store naturressurser, spesielt olje, som er en viktig del av økonomien. Og selv om vi kan være enige om at det er en næring som kommer til å være like viktig i fremtiden som i dag, er det ikke sikkert vi er like enige om alt på banen. Vi spør hvor mange kort blir delt ut? Her har alle blitt enige om at ingen røde kort blir delt ut.</p>
+<p>Økonomien i Senegal er basert på jordbruk, fiske, gruvedrift og turisme. Viktige eksportvarer inkluderer peanøtter, fisk og fosfat. Turister tiltrekkes blant annet av strender, nasjonalparker og historiske steder som øya Gorée, som står på UNESCOs verdensarvliste på grunn av sin rolle i den transatlantiske slavehandelen. Vi gir kolonihistorien rødt kort. Hvor mange kort blir det i kampen?</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/irak_kort-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/senegal_kort-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
-<!-- Håper du har lært noe spennende om Norges motstander. Nå skal vi lære litt om  -->
-<!-- hverandres motstand. Her er poenglistene: -->
-<!-- ### Topp -->
-<!-- Her komme det tabell med de så har mest poeng -->
-<!-- ![](bilder/ebh.jpg) -->
-<!-- Edderkoppplott?? -->
-<!-- ### Bunn -->
-<!-- og minst poeng -->
-<!-- ![](bilder/ebh_oppgitt.jpg) -->
+</section>
+<section id="topp-og-bunnlister" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="topp-og-bunnlister"><span class="header-section-number">5</span> Topp og bunnlister</h2>
+<p>Håper du har lært noe spennende om Norges motstander. Nå skal vi lære litt om hverandres motstand. Her er poenglistene:</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/leder-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
 <!-- ## Poeng som gjenstår å spela om -->
 <!-- Her komme info om kor mange poeng folk har igjen å  få utdelt på spørsmålene som  -->
 <!-- ennå ikkje e delt ud. -->

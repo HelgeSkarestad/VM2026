@@ -5,7 +5,23 @@ library(tidyr)
 library(janitor)
 
 
-raw <- read_excel(here::here("data/260612-spmogsvar.xlsx")) |>  clean_names()
+svar <- read_excel(here::here("data/260612-spmogsvar.xlsx")) |>  clean_names()
+
+fasit <- read_excel(here::here("data/260618-fasit.xlsx")) |>  
+  clean_names() |> 
+  mutate(autograf = "Fasit") |> 
+  filter(fullforingstidspunkt > lubridate::mdy("06172026"))
+
+fasit <- cbind(fasit[,1:5],
+      tibble(tidspunkt_for_siste_endring=fasit$fullforingstidspunkt),
+      fasit[,6:ncol(fasit)])
+colnames(fasit) <- colnames(svar)
+
+
+raw <- bind_rows(svar,
+                 fasit)
+rm(list=c("svar","fasit"))
+
 
 meta_cols <- names(raw)[1:8]
 smaaspoersmaal <- names(raw)[9:16]
@@ -242,5 +258,28 @@ alle_spm$tekst <- gsub(" riktig svar gir 5 poeng","", alle_spm$tekst)
 alle_spm$tekst <- gsub(" riktig svar gir 3 poeng","", alle_spm$tekst)
 alle_spm$tekst <- gsub(" riktig svar gir 2 poeng","", alle_spm$tekst)
 
-            
-            
+
+fasitsvar <- metadata |> 
+  filter(autograf == "Fasit") |> 
+  mutate(fasitdato = paste("Fasit",klubblaget_ditt)) |> 
+  select(id,fasitdato) 
+
+
+fasit <- alle_svar |> 
+  inner_join(fasitsvar, by = join_by(id)) |> 
+  pivot_wider(names_from=fasitdato, values_from = svar)
+
+alle_spm <- alle_spm |> 
+  left_join(fasit |> select(-id),
+            by = join_by(spm))
+
+alle_spm$poeng[alle_spm$spm=="Q30"] <- as.numeric(gsub(" poeng","",alle_spm$`Fasit 18.06.2026`[alle_spm$spm=="Q30"]))
+
+
+alle_svar <- alle_svar |> 
+  anti_join(fasit,
+            by = join_by(id))
+
+alle_svar$svar[alle_svar$spm == "Q46" & alle_svar$id==11] <- "Svarte ikke"
+
+rm(list=c("fasitsvar","fasit"))
