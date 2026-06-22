@@ -8,11 +8,12 @@ library(janitor)
 svar <- read_excel(here::here("data/260612-spmogsvar.xlsx")) |>  clean_names()
 fasit <- read_excel(here::here("data/260618-fasit.xlsx")) |>  
   clean_names() |> 
-  mutate(autograf = "Fasit")
+  mutate(autograf = "Fasit") |> 
+  filter(fullforingstidspunkt > lubridate::mdy("06172026"))
 
 raw <- bind_rows(svar,
                  fasit)
-
+rm(list=c("svar","fasit"))
 
 
 
@@ -252,13 +253,25 @@ alle_spm$tekst <- gsub(" riktig svar gir 3 poeng","", alle_spm$tekst)
 alle_spm$tekst <- gsub(" riktig svar gir 2 poeng","", alle_spm$tekst)
 
 
+fasitsvar <- metadata |> 
+  filter(autograf == "Fasit") |> 
+  mutate(fasitdato = paste("Fasit",klubblaget_ditt)) |> 
+  select(id,fasitdato) 
 
-alle_svar |> 
-  inner_join(metadata |> 
-               arrange(fullforingstidspunkt) |> 
-               filter(autograf == "Fasit") |> 
-               slice(n()) |> 
-               select(id)
-  ) |> 
-  select(spm, fasit = svar) |> 
-  View()
+
+fasit <- alle_svar |> 
+  inner_join(fasitsvar, by = join_by(id)) |> 
+  pivot_wider(names_from=fasitdato, values_from = svar)
+
+alle_spm <- alle_spm |> 
+  left_join(fasit |> select(-id),
+            by = join_by(spm))
+
+alle_spm$poeng[alle_spm$spm=="Q30"] <- as.numeric(gsub(" poeng","",alle_spm$`Fasit 18.06.2026`[alle_spm$spm=="Q30"]))
+
+
+alle_svar <- alle_svar |> 
+  anti_join(fasit,
+            by = join_by(id))
+
+rm(list=c("fasitsvar","fasit"))
