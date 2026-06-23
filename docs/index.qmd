@@ -703,6 +703,33 @@ resultat |>
 ```
 
 
+```{r leder, include=FALSE}
+library(png)
+
+
+resultat <- alle_svar |> left_join(alle_spm,
+                       by = join_by(spm)) |> 
+  left_join(metadata |> select(id,autograf),
+            by = join_by(id)) |> 
+  # mutate(Poengfangst = poeng*(`Fasit 18.06.2026`==svar)) |> 
+  mutate(across(starts_with("Fasit"), list(Poengfangst=~poeng*(.==svar)))) |> 
+  group_by(autograf) |> 
+  summarise(across(ends_with("Poengfangst"), ~ sum(.))) |>
+  mutate(across(ends_with("Poengfangst"), ~rank(-.)))  |> 
+  pivot_longer(ends_with("Poengfangst"), names_to = "Dato", values_to = "Plassering")  |> 
+  mutate(Dato = as.numeric(as.factor(Dato)))
+
+resultat |> 
+  ggplot(aes(x=Dato,y=Plassering,col=autograf)) +
+  geom_line() +
+  geom_point() +
+  scale_y_reverse() +
+  geom_label(data=resultat |> filter(Dato==max(Dato)), aes(x=Dato,y=Plassering,label = autograf),size=3) +
+  theme_minimal() + theme(legend.position="none")
+
+
+
+```
 
 <!-- ## Poeng som gjenstår å spela om -->
 
