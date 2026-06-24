@@ -680,15 +680,15 @@ resultat |>
     grob = img_grob_bra,
     xmin = 1,
     # xmax = 1.5,
-    ymin = 7,
+    ymin = 13,
     # ymax = 9
   )+
   annotation_custom(
     grob = img_grob_daarlig,
     xmin = -0.5,
     # xmax = 1.5,
-    ymin = 3.0,
-    ymax = 5
+    ymin = 5.0,
+    ymax = 10
   )+
   ggrepel::geom_label_repel(aes(y=Poengfangst,label = autograf, col=Poengfangst),
                             size=3,label.padding = 0.15, force=3) +
@@ -704,7 +704,6 @@ resultat |>
 
 
 ```{r leder, include=FALSE}
-library(png)
 
 
 resultat <- alle_svar |> left_join(alle_spm,

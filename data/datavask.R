@@ -7,7 +7,7 @@ library(janitor)
 
 svar <- read_excel(here::here("data/260612-spmogsvar.xlsx")) |>  clean_names()
 
-fasit <- read_excel(here::here("data/260618-fasit.xlsx")) |>  
+fasit <- read_excel(here::here("data/260624-fasit.xlsx")) |>  
   clean_names() |> 
   mutate(autograf = "Fasit") |> 
   filter(fullforingstidspunkt > lubridate::mdy("06172026"))
