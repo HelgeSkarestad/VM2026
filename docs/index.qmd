@@ -42,7 +42,7 @@ Her er pekere til tidligere versjoner av rapporten:
 
 ## Datagrunnlag
 
-<img src="./bilder/roing.png" alt="roing">
+<img src="./bilder/roing.jpg" alt="roing">
 
 
 
