@@ -13,7 +13,7 @@ execute:
 ---
 
 
-![](bilder/venner.jpg)
+![](bilder/venner.png)
 
 Denne rapporten viser resultatene fra VM-tuppekunkurransen.
 Utrolig avansert analyse er anvendt for å tolke innsendte tippelapper. 
