@@ -52,9 +52,9 @@ spmtab |> left_join(svartab) |>
   # arrange(spm) |> 
   flextable::flextable() |>
   flextable::set_table_properties(layout = "autofit") |> 
-  flextable::font(fontname="Arial",part="all") |> 
-  flextable::bg(bg = "white", part = "header") |> 
-  flextable::bg(bg = "white", j=1) |> 
+  flextable::font(fontname="Arial",part="all") |>
+  flextable::bg(bg = "white", part = "header") |>
+  flextable::bg(bg = "white", j = 1) |>
   flextable::set_table_properties(opts_html = list(
     scroll = list(
       height = "500px",
