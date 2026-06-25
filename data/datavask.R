@@ -7,7 +7,7 @@ library(janitor)
 
 svar <- read_excel(here::here("data/260612-spmogsvar.xlsx")) |>  clean_names()
 
-fasit <- read_excel(here::here("data/260618-fasit.xlsx")) |>  
+fasit <- read_excel(here::here("data/260624-fasit.xlsx")) |>  
   clean_names() |> 
   mutate(autograf = "Fasit") |> 
   filter(fullforingstidspunkt > lubridate::mdy("06172026"))
@@ -267,17 +267,19 @@ fasitsvar <- metadata |>
 
 fasit <- alle_svar |> 
   inner_join(fasitsvar, by = join_by(id)) |> 
+  select(-id) |> 
   pivot_wider(names_from=fasitdato, values_from = svar)
 
 alle_spm <- alle_spm |> 
-  left_join(fasit |> select(-id),
-            by = join_by(spm))
+  left_join(fasit,
+            by = join_by(spm)) |> 
+  distinct()
 
 alle_spm$poeng[alle_spm$spm=="Q30"] <- as.numeric(gsub(" poeng","",alle_spm$`Fasit 18.06.2026`[alle_spm$spm=="Q30"]))
 
 
 alle_svar <- alle_svar |> 
-  anti_join(fasit,
+  anti_join(fasitsvar,
             by = join_by(id))
 
 alle_svar$svar[alle_svar$spm == "Q46" & alle_svar$id==11] <- "Svarte ikke"

@@ -1,5 +1,5 @@
 ---
-title: "&#x26BD; VM-tuppekunkurranse – Resultater &#127942;"
+title: "&#x26BD; VM-tuppekunkurranse – Resultater &#128675; &#127942;"
 author: "Helge & KI"
 format:
   html:
@@ -13,7 +13,7 @@ execute:
 ---
 
 
-![](bilder/fifa.jpg)
+![](bilder/venner.png)
 
 Denne rapporten viser resultatene fra VM-tuppekunkurransen.
 Utrolig avansert analyse er anvendt for å tolke innsendte tippelapper. 
@@ -32,14 +32,16 @@ Alle svar som er levert inn ligger her:
 
 Her er pekere til tidligere versjoner av rapporten:
 
-<a href="irakkampen.html">Før Irak-kampen</a>
+<a href="irakkampen.html">Før Irak</a>
+
+<a href="senegalkampen.html">Før Senegal</a>
 
 
 
 
 ## Datagrunnlag
 
-![](bilder/lagbilde.jpg)
+![](bilder/roing.png)
 
 Her kommer det sylskarpe analyser av svarene som er sendt inn.
 Analysene handler mest om å sette opp foreløpig stilling i tippekonkurransen,
@@ -178,6 +180,39 @@ metainfo |>
 ```
 
 
+<!-- I neste figur beholdes x-aksen, men y-aksen skiftes ut med 
+poengfangst til nå. Noen har brukt mye tid til å skaffe veldig få poeng.
+Andre har brukt lite tid til å skaffe mange poeng.-->
+
+```{r tid_poeng, include=FALSE}
+
+
+resultat <- alle_svar |> left_join(alle_spm,
+                       by = join_by(spm)) |> 
+  left_join(metadata |> select(id,autograf),
+            by = join_by(id)) |> 
+  # mutate(Poengfangst = poeng*(`Fasit 18.06.2026`==svar)) |> 
+  mutate(across(starts_with("Fasit"), ~poeng*(.==svar))) |> 
+  group_by(autograf) |> 
+  summarise(across(starts_with("Fasit"), ~ sum(.))) |>
+  select(autograf,
+         Poengfangst = last_col()) |> 
+  arrange(-Poengfangst)
+
+metainfo |> 
+  inner_join(resultat, by = join_by(autograf)) |> 
+  mutate(ppt = Poengfangst/Tidsbruk) |> 
+  ggplot(aes(x=Tidsbruk,y=ppt)) +
+    ggrepel::geom_label_repel(aes(label=autograf),size=3,label.padding = 0.15)+
+
+  theme_minimal() +
+  theme(legend.position = "bottom",
+        legend.direction = "horizontal") +
+  scale_x_continuous(trans='log10') + xlab("Tidsbruk (minutter, log10-skala)") +
+  ggtitle(label = "Poengfangst per antall minutter")
+
+```
+
 
 
 
@@ -185,7 +220,7 @@ metainfo |>
 
 ## Innledning
 
-```{r innledning_prepp}
+```{r innledning_prepp, include=FALSE}
 interessante_spm <- alle_spm |> 
   filter(spm %in% paste0("Q",c(1:7))) |> 
   left_join(alle_svar,
@@ -218,40 +253,42 @@ like_svar <- tibble(spm = c("Q7"))
 
 ```
 
-Er vi enige om noe. Det viser seg at ja, jammen er vi det. Figuren viser spørsmål 
-hvor det er størst grad av enighet
+Angående Frankrike-kampen, så kan to interessante spørsmål utledes fra de avgitte svarene.
+Her er det jammen mulig å diskutere seg hes. Vinner Frankrike VM og blir Mbappe toppscorer?
+De mest frankofile fyrene tror ja på begge.
 
-```{r innledning_enighet}
+```{r frankrike_vinner}
+
 alle_spm |> 
-  inner_join(like_svar,by = join_by(spm)) |>
+  inner_join(tibble(spm = c("Q50","Q64")),by = join_by(spm)) |>
   left_join(alle_svar,
             by = join_by(spm)) |> 
-  left_join(metadata |> select(id,autograf)) |> 
-  filter(id != "Fasit") |> 
+  left_join(metadata |> select(id,autograf))  |> 
+  select(svar,autograf,spm) |> 
+  pivot_wider(names_from=spm, values_from=svar) |> 
   mutate(theta = runif(n=n(),min=0,max=2*pi),
-         r = runif(n=n(),min=0.1,max=0.5),
-         xakse = case_when(spm=="Q2" ~ 0,
+         r = runif(n=n(),min=0.1,max=0.4),
+         xakse = case_when(Q50 == "Frankrike" ~ 0,
+                           .default =  1),
+         yakse = case_when(Q64 == "Kylian Mbappe" ~ 0,
                            .default = 1),
+         gruppe = paste(xakse,yakse),
          xakse = xakse + r*cos(theta),
-         yakse = case_when(svar=="Nei" ~ 1,
-                           .default = 0),
          yakse = yakse + r*sin(theta)) |> 
-  ggplot(aes(x=xakse, y=yakse, col=svar)) +
+  ggplot(aes(x=xakse, y=yakse, col=gruppe)) +
   # geom_label(aes(label = autograf),size = 3,) +
-ggrepel::geom_label_repel(aes(label=autograf),size=3,label.padding = 0.15)+
-  scale_y_continuous(breaks = c(0,1), labels = c("Ja","Nei")) +
-  scale_x_continuous(breaks=c(1),labels = c("Er Donald Trump i publikum under en av norges kamper?"), limits = c(0.5,1.5)) +
+ggrepel::geom_label_repel(aes(label=autograf),size=3,label.padding = 0.15) +
+  scale_y_continuous(breaks = c(0,1), labels = c("Mbappe blir toppscorer","Noen andre blir toppscorer")) +
+  scale_x_continuous(breaks=c(0,1),labels = c("Frankrike vinner VM","Noen andre vinner VM"), limits = c(-0.5,1.5)) +
   xlab("") + ylab("") +
   theme_minimal() + theme(legend.position="none") +
-  ggtitle(label = "Innledende spørsmål", subtitle = "Spørsmål med størst enighet")
+  ggtitle(label = "Innledende spørsmål")
 
 ```
 
 
-Men vi er også uenige om mye. Figuren viser spørsmål hvor vi har vært mest 
-delte i svarene.
 
-```{r innledning_uenighet}
+```{r innledning_uenighet, include=FALSE}
 # alle_spm |> 
 #   inner_join(ulike_svar,by = join_by(spm)) |>
 #   left_join(alle_svar,
@@ -306,15 +343,20 @@ alle_spm |>
 
 
 ## Gruppespill
-Ordet gruppe kommer opprinnelig fra det italienske ordet gruppo, som betyr en samling eller klump av ting eller personer. Dette ordet ble brukt innen kunst, særlig om flere figurer som er arrangert sammen i et bilde eller en skulptur.
-Fra italiensk spredte ordet seg til andre europeiske språk, blant annet fransk (groupe), før det ble tatt i bruk på norsk. I moderne norsk brukes gruppe om en samling personer eller elementer som hører sammen eller har noe felles, for eksempel en arbeidsgruppe eller en vennegjeng.
-Kort sagt har ordet utviklet seg fra å beskrive noe visuelt samlet, til å betegne en mer generell samling eller enhet.
+Grupperinger er en grunnleggende måte mennesker organiserer verden på. Vi deler
+inn objekter, fenomener og mennesker i grupper for å skape oversikt, forstå 
+sammenhenger og gjøre kommunikasjon enklere. Slike inndelinger finnes i mange 
+former og brukes i ulike sammenhenger.
+
+Kort sagt er grupperinger et universelt verktøy for å skape orden i kompleksitet.
+De gjør det mulig å se mønstre, trekke konklusjoner og kommunisere på en
+effektiv måte, enten det gjelder dagligdagse valg eller avansert faglig arbeid.
 
 Dypdykk i hver gruppe kommer etter hvert som gruppespillet utfolder seg.
 Her ser vi på hvilke grupper av respondenter som har svart hva i hvilke grupper,
 gruppert etter antall. Det er til å bli svimmel av.
 
-### Dypdykk gruppe E-H
+### Dypdykk gruppe I-L
 
 ```{r gruppe_A_L}
 gruppesvar <- alle_spm |> 
@@ -355,10 +397,26 @@ ft1 <- flextable::set_table_properties(ft1, layout = "autofit") |>
 ft1
 ```
 
-```{r gruppe_E_H_mest_vanlig,include=TRUE}
+```{r gruppe_E_H_mest_vanlig,include=FALSE}
 ft1 <- gruppesvar |> 
   # filter(Gruppe %in% LETTERS[1:12]) |>
   filter(Gruppe %in% LETTERS[5:8]) |>
+  slice(1) |> 
+  distinct() |> 
+  rename(`Mest vanlig rekkefølge` = Rekkefølge) |> 
+  select(-Antall) |> 
+  flextable::flextable()
+
+ft1 <- flextable::set_table_properties(ft1, layout = "autofit") |> 
+  flextable::font(fontname="Arial",part="all")
+
+ft1
+```
+
+```{r gruppe_I_L_mest_vanlig,include=TRUE}
+ft1 <- gruppesvar |> 
+  # filter(Gruppe %in% LETTERS[1:12]) |>
+  filter(Gruppe %in% LETTERS[9:12]) |>
   slice(1) |> 
   distinct() |> 
   rename(`Mest vanlig rekkefølge` = Rekkefølge) |> 
@@ -388,7 +446,7 @@ ft2 <- flextable::set_table_properties(ft2, layout = "autofit") |>
   flextable::font(fontname="Arial",part="all")
 ft2
 ```
-```{r gruppe_E_H_mest_uvanlig, include=TRUE}
+```{r gruppe_E_H_mest_uvanlig, include=FALSE}
 ft2 <- gruppesvar |> 
   # filter(Gruppe %in% LETTERS[1:12]) |>
   filter(Gruppe %in% LETTERS[5:8]) |>
@@ -401,24 +459,37 @@ ft2 <- flextable::set_table_properties(ft2, layout = "autofit") |>
   flextable::font(fontname="Arial",part="all")
 ft2
 ```
+```{r gruppe_I_L_mest_uvanlig, include=TRUE}
+ft2 <- gruppesvar |> 
+  # filter(Gruppe %in% LETTERS[1:12]) |>
+  filter(Gruppe %in% LETTERS[9:12]) |>
+  slice(n()) |> 
+  distinct() |> 
+  rename(`Mest uvanlige rekkefølge` = Rekkefølge) |> 
+  select(-Antall) |> 
+  flextable::flextable()
+ft2 <- flextable::set_table_properties(ft2, layout = "autofit") |> 
+  flextable::font(fontname="Arial",part="all")
+ft2
+```
 
 
 
-## Senegal-kampen
+## Frankrike-kampen
 
-Senegal er et land i Vest-Afrika som ligger ved Atlanterhavet, og har grense til blant annet Mauritania, Mali og Guinea.
-Hovedstaden Dakar ligger ytterst på Kapp Verde-halvøya og er et viktig knutepunkt for handel, politikk og kultur i regionen. 
-Byen er kjent for sin livlige atmosfære, markeder og musikkmiljø. Livlig blir det utvilsomt når ballen går i mål.
+Frankrike er et land i Vest-Europa, kjent for sin rike historie, kultur og innflytelse på kunst, politikk og mat. 
+Hovedstaden Paris er et av verdens mest besøkte reisemål, berømt for severdigheter som Eiffeltårnet, Louvre og Notre-Dame.
+Vi teller heldigvis ikke reisemål i fotball-VM. Hva blir antallet spillemål?
 
-```{r senegal_maal}
+```{r frankrike_maal}
 set.seed(71)
 alle_spm |> 
-  filter(spm %in% c("Q16","Q17")) |> 
+  filter(spm %in% c("Q23","Q24")) |> 
   left_join(alle_svar |> filter(id!="Fasit"),by = join_by(spm)) |> 
   left_join(metadata |>  select(id, autograf), by = join_by(id))|> 
   mutate(theta = runif(n=n(),min=0,max=2*pi),
          r = runif(n=n(),min=0.3,max=0.6),
-         xakse = case_when(spm=="Q16" ~ 0,
+         xakse = case_when(spm=="Q23" ~ 0,
                            .default = 2),
          xakse = xakse + r*cos(theta),
          yakse = as.numeric(svar),
@@ -436,10 +507,10 @@ alle_spm |>
   theme_minimal() + #theme(legend.position="none") +
   theme(legend.position = "bottom",
         legend.direction = "horizontal") +
-  ggtitle(label = "Antall mål Senegal-Norge") +
+  ggtitle(label = "Antall mål Frankrike-Norge") +
   scale_x_continuous(breaks=c(0,2),
                      labels = c("Norge scorer",
-                                "Senegal scorer"),
+                                "Frankrike scorer"),
                      # limits = c(-1,3)
                      ) +
   scale_y_continuous(breaks = seq(0,5),
@@ -450,16 +521,14 @@ alle_spm |>
 ```
 
 
-Landet fikk sin uavhengighet fra Frankrike i 1960, og har siden vært regnet som et av de mest stabile demokratiene i Afrika. 
-Senegal har hatt flere fredelige maktoverganger, noe som skiller det fra mange andre land i regionen.
-Fransk er offisielt språk, men mange snakker også wolof og andre lokale språk i dagliglivet.
-Ingen av de norske spillerne snakker wolof, men hvem av innbytterne får mulighet 
-å snakke med føttene?
+Landet har spilt en viktig rolle i Europas historie, blant annet gjennom den
+franske revolusjonen på slutten av 1700-tallet, som fikk stor betydning for utviklingen av
+demokrati og menneskerettigheter. I dag er Frankrike en av Europas største økonomier og en sentral aktør i EU.
+Hvem av Norges benkestartere får mulighet å bli en sentral aktør i kampen?
 
-
-```{r senegal_innbytter}
+```{r frankrike_innbytter}
 alle_spm |> 
-  filter(spm %in% c("Q18")) |> 
+  filter(spm %in% c("Q25")) |> 
   left_join(alle_svar |> filter(id!="Fasit"),by=join_by(spm)) |> 
   left_join(metadata |>  select(id, autograf)) |> 
   # group_by(spm, tekst, svar) |> 
@@ -476,43 +545,70 @@ alle_spm |>
              ) +
   xlab("") + ylab("") +
   theme_minimal()+ theme(legend.position="none") +
-  ggtitle("Første innbytter Norge-Senegal")
+  ggtitle("Første innbytter Norge-Frankrike")
 ```
 
 
 
-Kulturen i Senegal er rik og mangfoldig, med sterke tradisjoner innen musikk, dans og kunst.
-Spesielt er senegalesisk musikk, som mbalax, kjent både i Afrika og internasjonalt. 
-Den kjente sangeren Youssou N’Dour kommer fra Senegal. Landet er også kjent for sin varme gjestfrihet,
-ofte omtalt som teranga, som er en viktig del av den nasjonale identiteten.
+Fransk er det offisielle språket, og kulturen er kjent for blant annet vin, ost,
+mote og gastronomi. Landskapet i Frankrike er variert, fra Alpene og Pyreneene
+til vinområder og lange kystlinjer. Dette gjør landet til et populært reisemål både for natur og storbyliv.
+Denne teksten er så pass tynn at jeg ikke finner en god overgang til antall cornere. 
+Her er uansett svarene:
 
-
-```{r senegal_cornere}
-
+```{r frankrike_cornere}
 alle_spm |> 
-  filter(spm %in% c("Q19","Q20")) |> 
-  left_join(alle_svar |> filter(id!="Fasit"),by=join_by(spm)) |> 
-  left_join(metadata |>  select(id, autograf)) |> 
-  # group_by(spm, tekst, svar) |> 
-  # summarise(autograf = paste0(autograf,sep=", ")) |> 
-  ggplot(aes(x=tekst)) +
+  filter(spm %in% c("Q26","Q27")) |> 
+  left_join(alle_svar |> filter(id!="Fasit"),by = join_by(spm)) |> 
+  left_join(metadata |>  select(id, autograf), by = join_by(id))|> 
+  mutate(theta = runif(n=n(),min=0,max=2*pi),
+         r = runif(n=n(),min=0.3,max=0.6),
+         xakse = case_when(spm=="Q27" ~ 0,
+                           .default = 2),
+         xakse = xakse + r*cos(theta),
+         yakse = case_when(svar=="Flere" ~ 6,
+                           .default = as.numeric(svar)),
+         yakse = yakse + r*sin(theta),
+         `Antall cornere` = svar) |> 
+  ggplot(aes(x=xakse, y=yakse, col=`Antall cornere`)) +
   # geom_label(aes(y=svar, label = autograf, col=svar),
-  #            position = position_jitter(width = 0.2, height = 0.2)
+  #            position = position_jitter(width = 0.25, height = 0.25)
   # ) +
   
-  ggrepel::geom_label_repel(aes(y=svar,label = autograf, col=svar),
-                            size=3,label.padding = 0.15, force=3) +
+  ggrepel::geom_label_repel(aes(label = autograf),
+                            size=3,label.padding = 0.15,
+                            force=3) +
   xlab("") + ylab("") +
-  theme_minimal() + theme(legend.position="none") +
-  ggtitle("Antall cornere")
+  theme_minimal() + #theme(legend.position="none") +
+  theme(legend.position = "bottom",
+        legend.direction = "horizontal") +
+  ggtitle(label = "Antall cornere Frankrike-Norge") +
+  scale_x_continuous(breaks=c(0,2),
+                     labels = c("Cornere første omgang",
+                                "Cornere andre omgang"),
+                     # limits = c(-1,3)
+                     ) +
+  scale_y_continuous(breaks = seq(0,6),
+                     labels = c("0","1","2","3","4","5","Flere"),
+                     # limits = c(-1,4)
+                     )
 ```
 
-Økonomien i Senegal er basert på jordbruk, fiske, gruvedrift og turisme. Viktige eksportvarer inkluderer peanøtter, fisk og fosfat.
-Turister tiltrekkes blant annet av strender, nasjonalparker og historiske steder som øya Gorée, 
-som står på UNESCOs verdensarvliste på grunn av sin rolle i den transatlantiske slavehandelen.
-Vi gir kolonihistorien rødt kort. Hvor mange kort blir det i kampen?
+Frankrike har en rik og suksessfull fotballhistorie, og regnes som en av de største fotballnasjonene i verden.
 
-```{r senegal_kort}
+Fotballen kom til Frankrike på slutten av 1800-tallet, og det franske fotballforbundet (FFF) ble etablert i 1919. Landslaget deltok i det første verdensmesterskapet i 1930, men hadde i mange år varierende resultater.
+
+På 1980-tallet fikk Frankrike sitt første store gjennombrudd, ledet av stjernespilleren Michel Platini. Laget vant EM i 1984 på hjemmebane, noe som var landets første store trofé. Denne perioden etablerte Frankrike som en seriøs fotballnasjon.
+
+Den største suksessen kom på slutten av 1990-tallet og begynnelsen av 2000-tallet. Med spillere som Zinedine Zidane, Thierry Henry og Didier Deschamps vant Frankrike VM i 1998 (på hjemmebane) og EM i 2000. 
+Dette laget regnes som et av de beste i fotballhistorien.
+
+Frankrike fortsatte å være en toppnasjon også senere. De nådde VM-finalen i 2006, og fikk en ny storhetstid med en ny generasjon spillere som Kylian Mbappé, Antoine Griezmann og Paul Pogba:  
+VM-gull i 2018 og VM-finale i 2022 (tap mot Argentina etter straffer).
+
+I 2006 endte finalen med et rødt kort til Frankrike. Skjer det i kampen mot Norge?
+
+```{r frankrike_kort}
 set.seed(48)
 alle_spm |> 
   filter(spm %in% c("Q21","Q22")) |> 
@@ -558,11 +654,13 @@ resultat <- alle_svar |> left_join(alle_spm,
                        by = join_by(spm)) |> 
   left_join(metadata |> select(id,autograf),
             by = join_by(id)) |> 
-  mutate(Poengfangst = poeng*(`Fasit 18.06.2026`==svar)) |> 
+  # mutate(Poengfangst = poeng*(`Fasit 18.06.2026`==svar)) |> 
+  mutate(across(starts_with("Fasit"), ~poeng*(.==svar))) |> 
   group_by(autograf) |> 
-  summarise(Poengfangst = sum(Poengfangst)) |> 
+  summarise(across(starts_with("Fasit"), ~ sum(.))) |>
+  select(autograf,
+         Poengfangst = last_col()) |> 
   arrange(-Poengfangst)
-
 
 
 img_bra <- png::readPNG("bilder/ebh.png")
@@ -582,15 +680,15 @@ resultat |>
     grob = img_grob_bra,
     xmin = 1,
     # xmax = 1.5,
-    ymin = 7.5,
+    ymin = 13,
     # ymax = 9
   )+
   annotation_custom(
     grob = img_grob_daarlig,
     xmin = -0.5,
     # xmax = 1.5,
-    ymin = 3.0,
-    ymax = 5
+    ymin = 5.0,
+    ymax = 10
   )+
   ggrepel::geom_label_repel(aes(y=Poengfangst,label = autograf, col=Poengfangst),
                             size=3,label.padding = 0.15, force=3) +
@@ -604,7 +702,45 @@ resultat |>
 
 ```
 
+Det er spennende i toppen. Neste figur viser utviklingen i plassering for topp 5.
+Noen klatrer og noen er stabile.
+```{r leder_utvikling, include=TRUE}
 
+
+resultat <- alle_svar |> left_join(alle_spm,
+                       by = join_by(spm)) |> 
+  left_join(metadata |> select(id,autograf),
+            by = join_by(id)) |> 
+  # mutate(Poengfangst = poeng*(`Fasit 18.06.2026`==svar)) |> 
+  mutate(across(starts_with("Fasit"), list(Poengfangst=~poeng*(.==svar)))) |> 
+  group_by(autograf) |> 
+  summarise(across(ends_with("Poengfangst"), ~ sum(.))) |>
+  mutate(across(ends_with("Poengfangst"), ~rank(-.)))  |> 
+  pivot_longer(ends_with("Poengfangst"), names_to = "Dato", values_to = "Plassering")  |> 
+  group_by(autograf) |> 
+  mutate(xakse = as.numeric(as.factor(Dato)),
+         Dato = lubridate::dmy(gsub("_Poengfangst","",gsub("Fasit ","",Dato))),
+         gruppe = case_when(tail(Plassering,1)<=5 ~ "Topp 5",
+                            tail(Plassering,1)>=15 ~ "Bunn 5",
+                            .default = "Middelhav")) |> 
+  filter(gruppe == "Topp 5")
+
+resultat |> 
+  ggplot(aes(x=Dato,y=Plassering,col=autograf)) +
+  geom_line() +
+  geom_point() +
+  scale_y_reverse() +
+  # geom_label(data=resultat |> filter(Dato==max(Dato)), aes(x=Dato,y=Plassering,label = autograf),size=3) +
+  ggrepel::geom_label_repel(data=resultat |> filter(Dato==max(Dato)),
+                            aes(y=Plassering,label = autograf),
+                            size=3,label.padding = 0.15, force=3) +
+  theme_minimal() + theme(legend.position="none") +
+  facet_grid(row=vars(gruppe)) +
+  ggtitle(label = "Utvikling i plassering for topp 5")
+
+
+
+```
 
 <!-- ## Poeng som gjenstår å spela om -->
 

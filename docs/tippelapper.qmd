@@ -35,7 +35,7 @@ spmtab <- tibble(spm="Klubblaget ditt",
 svartab <- bind_rows(alle_svar|> 
             filter(id!="Fasit") ,
           metadata |> 
-            filter(id!="Fasit") |> 
+            filter(autograf!="Fasit") |> 
             select(id, svar = klubblaget_ditt) |> 
             mutate(spm = "Klubblaget ditt")) |> 
   left_join(metadata |> select(autograf,id), by = join_by(id)) |> 
@@ -52,9 +52,9 @@ spmtab |> left_join(svartab) |>
   # arrange(spm) |> 
   flextable::flextable() |>
   flextable::set_table_properties(layout = "autofit") |> 
-  flextable::font(fontname="Arial",part="all") |> 
-  flextable::bg(bg = "white", part = "header") |> 
-  flextable::bg(bg = "white", j=1) |> 
+  flextable::font(fontname="Arial",part="all") |>
+  flextable::bg(bg = "white", part = "header") |>
+  flextable::bg(bg = "white", j = 1) |>
   flextable::set_table_properties(opts_html = list(
     scroll = list(
       height = "500px",
