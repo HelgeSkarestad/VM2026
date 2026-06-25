@@ -13,7 +13,7 @@ execute:
 ---
 
 
-![](bilder/venner.png)
+![](bilder/venner.jpg)
 
 Denne rapporten viser resultatene fra VM-tuppekunkurransen.
 Utrolig avansert analyse er anvendt for å tolke innsendte tippelapper. 
@@ -41,7 +41,7 @@ Her er pekere til tidligere versjoner av rapporten:
 
 ## Datagrunnlag
 
-![](bilder/roing.png)
+![](bilder/roing.jpg)
 
 Her kommer det sylskarpe analyser av svarene som er sendt inn.
 Analysene handler mest om å sette opp foreløpig stilling i tippekonkurransen,
