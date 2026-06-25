@@ -13,7 +13,7 @@ execute:
 ---
 
 
-![](bilder/fifa.jpg)
+![](bilder/venner.png)
 
 Denne rapporten viser resultatene fra VM-tuppekunkurransen.
 Utrolig avansert analyse er anvendt for å tolke innsendte tippelapper. 
@@ -41,7 +41,7 @@ Her er pekere til tidligere versjoner av rapporten:
 
 ## Datagrunnlag
 
-![](bilder/lagbilde.jpg)
+![](bilder/roing.png)
 
 Her kommer det sylskarpe analyser av svarene som er sendt inn.
 Analysene handler mest om å sette opp foreløpig stilling i tippekonkurransen,
@@ -184,7 +184,7 @@ metainfo |>
 poengfangst til nå. Noen har brukt mye tid til å skaffe veldig få poeng.
 Andre har brukt lite tid til å skaffe mange poeng.-->
 
-```{r tid_poeng, include=False}
+```{r tid_poeng, include=FALSE}
 
 
 resultat <- alle_svar |> left_join(alle_spm,
@@ -702,8 +702,9 @@ resultat |>
 
 ```
 
-
-```{r leder, include=FALSE}
+Det er spennende i toppen. Neste figur viser utviklingen i plassering for topp 5.
+Noen klatrer og noen er stabile.
+```{r leder_utvikling, include=TRUE}
 
 
 resultat <- alle_svar |> left_join(alle_spm,
@@ -716,15 +717,26 @@ resultat <- alle_svar |> left_join(alle_spm,
   summarise(across(ends_with("Poengfangst"), ~ sum(.))) |>
   mutate(across(ends_with("Poengfangst"), ~rank(-.)))  |> 
   pivot_longer(ends_with("Poengfangst"), names_to = "Dato", values_to = "Plassering")  |> 
-  mutate(Dato = as.numeric(as.factor(Dato)))
+  group_by(autograf) |> 
+  mutate(xakse = as.numeric(as.factor(Dato)),
+         Dato = lubridate::dmy(gsub("_Poengfangst","",gsub("Fasit ","",Dato))),
+         gruppe = case_when(tail(Plassering,1)<=5 ~ "Topp 5",
+                            tail(Plassering,1)>=15 ~ "Bunn 5",
+                            .default = "Middelhav")) |> 
+  filter(gruppe == "Topp 5")
 
 resultat |> 
   ggplot(aes(x=Dato,y=Plassering,col=autograf)) +
   geom_line() +
   geom_point() +
   scale_y_reverse() +
-  geom_label(data=resultat |> filter(Dato==max(Dato)), aes(x=Dato,y=Plassering,label = autograf),size=3) +
-  theme_minimal() + theme(legend.position="none")
+  # geom_label(data=resultat |> filter(Dato==max(Dato)), aes(x=Dato,y=Plassering,label = autograf),size=3) +
+  ggrepel::geom_label_repel(data=resultat |> filter(Dato==max(Dato)),
+                            aes(y=Plassering,label = autograf),
+                            size=3,label.padding = 0.15, force=3) +
+  theme_minimal() + theme(legend.position="none") +
+  facet_grid(row=vars(gruppe)) +
+  ggtitle(label = "Utvikling i plassering for topp 5")
 
 
 
