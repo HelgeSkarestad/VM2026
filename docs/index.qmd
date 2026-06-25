@@ -13,7 +13,8 @@ execute:
 ---
 
 
-<img src="./bilder/venner.png" alt="venner">
+
+![](bilder/venner.png)
 
 
 Denne rapporten viser resultatene fra VM-tuppekunkurransen.
@@ -42,8 +43,8 @@ Her er pekere til tidligere versjoner av rapporten:
 
 ## Datagrunnlag
 
-<img src="./bilder/roing.jpg" alt="roing">
 
+![](bilder/roing.jpg)
 
 
 
