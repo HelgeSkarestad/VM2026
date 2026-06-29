@@ -327,13 +327,37 @@ resultat |>
 
 ```
 
-<!-- ## Poeng som gjenstår å spela om -->
-
-<!-- Her komme info om kor mange poeng folk har igjen å  få utdelt på spørsmålene som  -->
-<!-- ennå ikkje e delt ud. -->
+Figuren under viser poengene som er igjen å spille om. Her er det fremdeles gode muligheter!
 
 
+```{r gjenstaar}
+ alle_svar |> left_join(alle_spm,
+                       by = join_by(spm)) |> 
+  left_join(metadata |> select(id,autograf),
+            by = join_by(id)) |> 
+  # mutate(Poengfangst = poeng*(`Fasit 18.06.2026`==svar)) |> 
+  mutate(Poengfangst= poeng*(`Fasit 29.06.2026`==svar),
+         Potensielt = poeng*(`Fasit 29.06.2026`=="Mangler svar")) |> 
+  group_by(autograf) |> 
+  summarise(
+    minimumsscore = sum(Poengfangst),
+    `Mulig poengfangst` = minimumsscore + sum(Potensielt)) |> 
+  arrange(desc(minimumsscore)) |> 
+  mutate(`Dagens plassering` = seq(1,19)) |> 
+  ggplot(aes()) +
+  geom_rect(aes(
+      xmin = minimumsscore,
+      xmax = `Mulig poengfangst`,
+      ymin = `Dagens plassering` - 0.35,
+      ymax = `Dagens plassering` + 0.35),
+      fill="steelblue") +
+    scale_y_reverse() +
 
+  geom_text(aes(x=`Mulig poengfangst`, y = `Dagens plassering`,label = autograf),size = 3,hjust=1,col="white") +
+  theme_minimal()
+
+
+```
 
 
 
