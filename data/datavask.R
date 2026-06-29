@@ -7,7 +7,7 @@ library(janitor)
 
 svar <- read_excel(here::here("data/260612-spmogsvar.xlsx")) |>  clean_names()
 
-fasit <- read_excel(here::here("data/260624-fasit.xlsx")) |>  
+fasit <- read_excel(here::here("data/260629-fasit.xlsx")) |>  
   clean_names() |> 
   mutate(autograf = "Fasit") |> 
   filter(fullforingstidspunkt > lubridate::mdy("06172026"))
@@ -275,7 +275,7 @@ alle_spm <- alle_spm |>
             by = join_by(spm)) |> 
   distinct()
 
-alle_spm$poeng[alle_spm$spm=="Q30"] <- as.numeric(gsub(" poeng","",alle_spm$`Fasit 18.06.2026`[alle_spm$spm=="Q30"]))
+alle_spm$poeng[alle_spm$spm=="Q30"] <- as.numeric(gsub(" poeng","",alle_spm$`Fasit 29.06.2026`[alle_spm$spm=="Q30"]))
 
 
 alle_svar <- alle_svar |> 
