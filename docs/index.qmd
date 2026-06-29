@@ -38,6 +38,11 @@ Her er pekere til tidligere versjoner av rapporten:
 
 <a href="senegalkampen.html">Før Senegal</a>
 
+<a href="frankrikekampen.html">Før Frankrike</a>
+
+
+
+
 
 
 
@@ -189,7 +194,7 @@ metainfo |>
 poengfangst til nå. Noen har brukt mye tid til å skaffe veldig få poeng.
 Andre har brukt lite tid til å skaffe mange poeng.-->
 
-```{r tid_poeng, include=FALSE}
+```{r tid_poeng, include=TRUE}
 
 
 resultat <- alle_svar |> left_join(alle_spm,
@@ -206,28 +211,161 @@ resultat <- alle_svar |> left_join(alle_spm,
 
 metainfo |> 
   inner_join(resultat, by = join_by(autograf)) |> 
-  mutate(ppt = Poengfangst/Tidsbruk) |> 
-  ggplot(aes(x=Tidsbruk,y=ppt)) +
+  mutate(`Poengfangst per minutt` = Poengfangst/Tidsbruk) |> 
+  ggplot(aes(x=Tidsbruk,y=`Poengfangst per minutt`)) +
     ggrepel::geom_label_repel(aes(label=autograf),size=3,label.padding = 0.15)+
 
   theme_minimal() +
   theme(legend.position = "bottom",
         legend.direction = "horizontal") +
   scale_x_continuous(trans='log10') + xlab("Tidsbruk (minutter, log10-skala)") +
-  ggtitle(label = "Poengfangst per antall minutter")
+  ggtitle(label = "Poengfangst per antall minutter brukt på utfylling", subtitle = "Time well spent")
 
 ```
 
 
 
 
+## Topp og bunnlister
+
+Her er poenglistene:
 
 
-## Innledning
+```{r leder}
+library(png)
+
+
+resultat <- alle_svar |> left_join(alle_spm,
+                       by = join_by(spm)) |> 
+  left_join(metadata |> select(id,autograf),
+            by = join_by(id)) |> 
+  # mutate(Poengfangst = poeng*(`Fasit 18.06.2026`==svar)) |> 
+  mutate(across(starts_with("Fasit"), ~poeng*(.==svar))) |> 
+  group_by(autograf) |> 
+  summarise(across(starts_with("Fasit"), ~ sum(.))) |>
+  select(autograf,
+         Poengfangst = last_col()) |> 
+  arrange(-Poengfangst)
+
+
+img_bra <- png::readPNG("bilder/ebh.png")
+img_grob_bra <- grid::rasterGrob(img_bra, interpolate = TRUE)
+
+
+img_daarlig <- png::readPNG("bilder/ebh_sint.png")
+img_grob_daarlig <- grid::rasterGrob(img_daarlig, interpolate = TRUE)
+
+
+
+resultat |> 
+  mutate(tekst = "Poengfangst") |> 
+  ggplot(aes(x=tekst))  +
+  theme_minimal() + theme(legend.position="none") +
+  annotation_custom(
+    grob = img_grob_bra,
+    xmin = 1,
+    # xmax = 1.5,
+    ymin = 50,
+    # ymax = 9
+  )+
+  annotation_custom(
+    grob = img_grob_daarlig,
+    xmin = -0.25,
+    # xmax = 1.5,
+    ymin = 30,
+    ymax = 35
+  )+
+  ggrepel::geom_label_repel(aes(y=Poengfangst,label = autograf, col=Poengfangst),
+                            size=3,label.padding = 0.15, force=3) +
+  xlab("") + ylab("") +
+  ggtitle("Antall poeng totalt")
+
+  
+
+
+  
+
+```
+
+Det er spennende i toppen. Neste figur viser utviklingen i plassering for topp 5.
+Noen klatrer og noen er stabile.
+```{r leder_utvikling, include=TRUE}
+
+
+resultat <- alle_svar |> left_join(alle_spm,
+                       by = join_by(spm)) |> 
+  left_join(metadata |> select(id,autograf),
+            by = join_by(id)) |> 
+  # mutate(Poengfangst = poeng*(`Fasit 18.06.2026`==svar)) |> 
+  mutate(across(starts_with("Fasit"), list(Poengfangst=~poeng*(.==svar)))) |> 
+  group_by(autograf) |> 
+  summarise(across(ends_with("Poengfangst"), ~ sum(.))) |>
+  mutate(across(ends_with("Poengfangst"), ~rank(-.)))  |> 
+  pivot_longer(ends_with("Poengfangst"), names_to = "Dato", values_to = "Plassering")  |> 
+  group_by(autograf) |> 
+  mutate(xakse = as.numeric(as.factor(Dato)),
+         Dato = lubridate::dmy(gsub("_Poengfangst","",gsub("Fasit ","",Dato))),
+         gruppe = case_when(tail(Plassering,1)<6 ~ "Topp 5",
+                            tail(Plassering,1)>=15 ~ "Bunn 5",
+                            .default = "Middelhav")) |> 
+  filter(gruppe == "Topp 5")
+
+resultat |> 
+  ggplot(aes(x=Dato,y=Plassering,col=autograf)) +
+  geom_line() +
+  geom_point() +
+  scale_y_reverse() +
+  # geom_label(data=resultat |> filter(Dato==max(Dato)), aes(x=Dato,y=Plassering,label = autograf),size=3) +
+  ggrepel::geom_label_repel(data=resultat |> filter(Dato==max(Dato)),
+                            aes(y=Plassering,label = autograf),
+                            size=3,label.padding = 0.15, force=3) +
+  theme_minimal() + theme(legend.position="none") +
+  facet_grid(row=vars(gruppe)) +
+  ggtitle(label = "Utvikling i plassering for topp 5")
+
+
+
+```
+
+Figuren under viser poengene som er igjen å spille om. Her er det fremdeles gode muligheter!
+
+
+```{r gjenstaar}
+ alle_svar |> left_join(alle_spm,
+                       by = join_by(spm)) |> 
+  left_join(metadata |> select(id,autograf),
+            by = join_by(id)) |> 
+  # mutate(Poengfangst = poeng*(`Fasit 18.06.2026`==svar)) |> 
+  mutate(Poengfangst= poeng*(`Fasit 29.06.2026`==svar),
+         Potensielt = poeng*(`Fasit 29.06.2026`=="Mangler svar")) |> 
+  group_by(autograf) |> 
+  summarise(
+    minimumsscore = sum(Poengfangst),
+    `Mulig poengfangst` = minimumsscore + sum(Potensielt)) |> 
+  arrange(desc(minimumsscore)) |> 
+  mutate(`Dagens plassering` = seq(1,19)) |> 
+  ggplot(aes()) +
+  geom_rect(aes(
+      xmin = minimumsscore,
+      xmax = `Mulig poengfangst`,
+      ymin = `Dagens plassering` - 0.35,
+      ymax = `Dagens plassering` + 0.35),
+      fill="steelblue") +
+    scale_y_reverse() +
+
+  geom_text(aes(x=`Mulig poengfangst`, y = `Dagens plassering`,label = autograf),size = 3,hjust=1,col="white") +
+  theme_minimal()
+
+
+```
+
+
+
+## Sluttspill
 
 ```{r innledning_prepp, include=FALSE}
 interessante_spm <- alle_spm |> 
-  filter(spm %in% paste0("Q",c(1:7))) |> 
+  filter(spm %in% paste0("Q",c(43:49))) |> 
   left_join(alle_svar,
             by = join_by(spm)) |> 
   filter(id!="Fasit") |> 
@@ -240,7 +378,7 @@ ulike_svar <- interessante_spm|>
   arrange(Sortering) |> 
   ungroup() |> 
   distinct(spm) |> 
-  slice(3:4)
+  slice(1:2)
   # slice(1:3)
 
 
@@ -248,21 +386,50 @@ like_svar <- interessante_spm|>
   arrange(-Sortering) |> 
   ungroup() |> 
   distinct(spm) |> 
-  slice(3:4)
+  slice(1:2)
   # slice(1:3)
 
 
 ulike_svar <- tibble(spm = c("Q1","Q4"))
-like_svar <- tibble(spm = c("Q7"))
+like_svar <- tibble(spm = c("Q44","Q46"))
 
 
 ```
 
-Angående Frankrike-kampen, så kan to interessante spørsmål utledes fra de avgitte svarene.
-Her er det jammen mulig å diskutere seg hes. Vinner Frankrike VM og blir Mbappe toppscorer?
-De mest frankofile fyrene tror ja på begge.
+```{r naar_ryker}
 
-```{r frankrike_vinner}
+ft0 <- alle_spm |> 
+  filter(spm %in% paste0("Q",c(43:49))) |> 
+  left_join(alle_svar,
+            by = join_by(spm)) |> 
+  filter(id!="Fasit") |>
+  left_join(metadata |> select(id,autograf)) |> 
+  group_by(tekst,svar) |> 
+  summarise(hvem = paste0(autograf, collapse=", ")) |> 
+  pivot_wider(names_from=svar, values_from=hvem) |> 
+  select(Spørsmål = tekst,
+         Gruppespill,
+         `16-delsfinale`,
+         # `8-delsfinale`,
+         # Kvartfinale,
+         # Semifinale,
+         # Finale,
+         # Vinner
+         ) |> 
+  flextable::flextable()
+
+ft0 <- flextable::set_table_properties(ft0, layout = "autofit") |> 
+  flextable::font(fontname="Arial",part="all")
+
+ft0
+
+```
+
+<!--Angående Frankrike-kampen, så kan to interessante spørsmål utledes fra de avgitte svarene.
+Her er det jammen mulig å diskutere seg hes. Vinner Frankrike VM og blir Mbappe toppscorer?
+De mest frankofile fyrene tror ja på begge.-->
+
+```{r frankrike_vinner, include=FALSE}
 
 alle_spm |> 
   inner_join(tibble(spm = c("Q50","Q64")),by = join_by(spm)) |>
@@ -347,7 +514,7 @@ alle_spm |>
 ```
 
 
-## Gruppespill
+## Retrospektiv av gruppespill
 Grupperinger er en grunnleggende måte mennesker organiserer verden på. Vi deler
 inn objekter, fenomener og mennesker i grupper for å skape oversikt, forstå 
 sammenhenger og gjøre kommunikasjon enklere. Slike inndelinger finnes i mange 
@@ -357,13 +524,74 @@ Kort sagt er grupperinger et universelt verktøy for å skape orden i kompleksit
 De gjør det mulig å se mønstre, trekke konklusjoner og kommunisere på en
 effektiv måte, enten det gjelder dagligdagse valg eller avansert faglig arbeid.
 
-Dypdykk i hver gruppe kommer etter hvert som gruppespillet utfolder seg.
-Her ser vi på hvilke grupper av respondenter som har svart hva i hvilke grupper,
-gruppert etter antall. Det er til å bli svimmel av.
+Under følger hvem som alle rette svar i hver gruppe
 
-### Dypdykk gruppe I-L
 
-```{r gruppe_A_L}
+```{r gruppevinner, include=TRUE}
+gruppesvar <- alle_spm |> 
+  distinct() |> 
+  # filter(spm %in% paste0("Q",seq(31.0,31.4,0.1))) |>
+  # filter(spm %in% paste0("Q",seq(31.0,34.4,0.1))) |> 
+  filter(spm %in% paste0("Q",seq(31.0,42.4,0.1))) |>
+  left_join(alle_svar, by = join_by(spm)) |> 
+  left_join(metadata |> select(id,autograf), by =join_by(id)) |> 
+  filter(id!="Fasit") |> 
+  mutate(Gruppe = substr(tekst,
+                         nchar(tekst),
+                         nchar(tekst)),
+         Korrekt = `Fasit 29.06.2026`==svar) |> 
+  group_by(Gruppe, id, autograf) |> 
+  summarise(Poeng = sum(Korrekt),
+            Rekkefølge = paste0(svar,collapse=", ")) |> 
+  filter(Poeng == 4)
+  
+ft1 <- gruppesvar |> 
+  group_by(Gruppe, Rekkefølge) |> 
+  summarise(Hvem = paste0(autograf, collapse=", ")) |> 
+  flextable::flextable()
+
+ft1 <- flextable::set_table_properties(ft1, layout = "autofit") |> 
+  flextable::font(fontname="Arial",part="all")
+
+ft1
+
+
+```
+
+Videre følger en oversikt over de som hadde ALT feil.
+```{r gruppetaper, include=TRUE}
+gruppesvar <- alle_spm |> 
+  distinct() |> 
+  # filter(spm %in% paste0("Q",seq(31.0,31.4,0.1))) |>
+  # filter(spm %in% paste0("Q",seq(31.0,34.4,0.1))) |> 
+  filter(spm %in% paste0("Q",seq(31.0,42.4,0.1))) |>
+  left_join(alle_svar, by = join_by(spm)) |> 
+  left_join(metadata |> select(id,autograf), by =join_by(id)) |> 
+  filter(id!="Fasit") |> 
+  mutate(Gruppe = substr(tekst,
+                         nchar(tekst),
+                         nchar(tekst)),
+         Korrekt = `Fasit 29.06.2026`==svar) |> 
+  group_by(Gruppe, id, autograf) |> 
+  summarise(Poeng = sum(Korrekt),
+            Rekkefølge = paste0(svar,collapse=", ")) |> 
+  filter(Poeng == 0)
+  
+ft2 <- gruppesvar |> 
+  group_by(Gruppe, Rekkefølge) |> 
+  summarise(Hvem = paste0(autograf, collapse=", ")) |> 
+  flextable::flextable()
+
+ft2 <- flextable::set_table_properties(ft2, layout = "autofit") |> 
+  flextable::font(fontname="Arial",part="all")
+
+ft2
+
+
+```
+
+
+```{r gruppe_A_L, include=FALSE}
 gruppesvar <- alle_spm |> 
   distinct() |> 
   # filter(spm %in% paste0("Q",seq(31.0,31.4,0.1))) |>
@@ -382,9 +610,9 @@ gruppesvar <- alle_spm |>
             Hvem = paste0(autograf,collapse = ", ")) |> 
   arrange(-Antall)
 ```
-Den neste tabellen viser et innblikk i grupperesultatene som var mest typiske og
-mest utypiske i tippekupongene. I den første tabellen vises de grupperesultatene 
-som flest har tippet. 
+<!-- Den neste tabellen viser et innblikk i grupperesultatene som var mest typiske og -->
+<!-- mest utypiske i tippekupongene. I den første tabellen vises de grupperesultatene  -->
+<!-- som flest har tippet.  -->
 
 ```{r gruppe_A_D_mest_vanlig,include=FALSE}
 ft1 <- gruppesvar |> 
@@ -418,7 +646,7 @@ ft1 <- flextable::set_table_properties(ft1, layout = "autofit") |>
 ft1
 ```
 
-```{r gruppe_I_L_mest_vanlig,include=TRUE}
+```{r gruppe_I_L_mest_vanlig,include=FALSE}
 ft1 <- gruppesvar |> 
   # filter(Gruppe %in% LETTERS[1:12]) |>
   filter(Gruppe %in% LETTERS[9:12]) |>
@@ -434,8 +662,8 @@ ft1 <- flextable::set_table_properties(ft1, layout = "autofit") |>
 ft1
 ```
 
-I den neste tabellen vises de grupperesultatene som færrest har valgt.
-Husk å si fra til de som har tippet mest idiotisk!
+<!-- I den neste tabellen vises de grupperesultatene som færrest har valgt. -->
+<!-- Husk å si fra til de som har tippet mest idiotisk! -->
 
 
 ```{r gruppe_A_D_mest_uvanlig, include=FALSE}
@@ -464,7 +692,7 @@ ft2 <- flextable::set_table_properties(ft2, layout = "autofit") |>
   flextable::font(fontname="Arial",part="all")
 ft2
 ```
-```{r gruppe_I_L_mest_uvanlig, include=TRUE}
+```{r gruppe_I_L_mest_uvanlig, include=FALSE}
 ft2 <- gruppesvar |> 
   # filter(Gruppe %in% LETTERS[1:12]) |>
   filter(Gruppe %in% LETTERS[9:12]) |>
@@ -480,13 +708,13 @@ ft2
 
 
 
-## Frankrike-kampen
+<!-- ## Frankrike-kampen -->
 
-Frankrike er et land i Vest-Europa, kjent for sin rike historie, kultur og innflytelse på kunst, politikk og mat. 
-Hovedstaden Paris er et av verdens mest besøkte reisemål, berømt for severdigheter som Eiffeltårnet, Louvre og Notre-Dame.
-Vi teller heldigvis ikke reisemål i fotball-VM. Hva blir antallet spillemål?
+<!-- Frankrike er et land i Vest-Europa, kjent for sin rike historie, kultur og innflytelse på kunst, politikk og mat.  -->
+<!-- Hovedstaden Paris er et av verdens mest besøkte reisemål, berømt for severdigheter som Eiffeltårnet, Louvre og Notre-Dame. -->
+<!-- Vi teller heldigvis ikke reisemål i fotball-VM. Hva blir antallet spillemål? -->
 
-```{r frankrike_maal}
+```{r frankrike_maal,include=FALSE}
 set.seed(71)
 alle_spm |> 
   filter(spm %in% c("Q23","Q24")) |> 
@@ -526,12 +754,12 @@ alle_spm |>
 ```
 
 
-Landet har spilt en viktig rolle i Europas historie, blant annet gjennom den
-franske revolusjonen på slutten av 1700-tallet, som fikk stor betydning for utviklingen av
-demokrati og menneskerettigheter. I dag er Frankrike en av Europas største økonomier og en sentral aktør i EU.
-Hvem av Norges benkestartere får mulighet å bli en sentral aktør i kampen?
+<!-- Landet har spilt en viktig rolle i Europas historie, blant annet gjennom den -->
+<!-- franske revolusjonen på slutten av 1700-tallet, som fikk stor betydning for utviklingen av -->
+<!-- demokrati og menneskerettigheter. I dag er Frankrike en av Europas største økonomier og en sentral aktør i EU. -->
+<!-- Hvem av Norges benkestartere får mulighet å bli en sentral aktør i kampen? -->
 
-```{r frankrike_innbytter}
+```{r frankrike_innbytter,include=FALSE}
 alle_spm |> 
   filter(spm %in% c("Q25")) |> 
   left_join(alle_svar |> filter(id!="Fasit"),by=join_by(spm)) |> 
@@ -555,13 +783,13 @@ alle_spm |>
 
 
 
-Fransk er det offisielle språket, og kulturen er kjent for blant annet vin, ost,
-mote og gastronomi. Landskapet i Frankrike er variert, fra Alpene og Pyreneene
-til vinområder og lange kystlinjer. Dette gjør landet til et populært reisemål både for natur og storbyliv.
-Denne teksten er så pass tynn at jeg ikke finner en god overgang til antall cornere. 
-Her er uansett svarene:
+<!-- Fransk er det offisielle språket, og kulturen er kjent for blant annet vin, ost, -->
+<!-- mote og gastronomi. Landskapet i Frankrike er variert, fra Alpene og Pyreneene -->
+<!-- til vinområder og lange kystlinjer. Dette gjør landet til et populært reisemål både for natur og storbyliv. -->
+<!-- Denne teksten er så pass tynn at jeg ikke finner en god overgang til antall cornere.  -->
+<!-- Her er uansett svarene: -->
 
-```{r frankrike_cornere}
+```{r frankrike_cornere,include=FALSE}
 alle_spm |> 
   filter(spm %in% c("Q26","Q27")) |> 
   left_join(alle_svar |> filter(id!="Fasit"),by = join_by(spm)) |> 
@@ -599,21 +827,21 @@ alle_spm |>
                      )
 ```
 
-Frankrike har en rik og suksessfull fotballhistorie, og regnes som en av de største fotballnasjonene i verden.
+<!-- Frankrike har en rik og suksessfull fotballhistorie, og regnes som en av de største fotballnasjonene i verden. -->
 
-Fotballen kom til Frankrike på slutten av 1800-tallet, og det franske fotballforbundet (FFF) ble etablert i 1919. Landslaget deltok i det første verdensmesterskapet i 1930, men hadde i mange år varierende resultater.
+<!-- Fotballen kom til Frankrike på slutten av 1800-tallet, og det franske fotballforbundet (FFF) ble etablert i 1919. Landslaget deltok i det første verdensmesterskapet i 1930, men hadde i mange år varierende resultater. -->
 
-På 1980-tallet fikk Frankrike sitt første store gjennombrudd, ledet av stjernespilleren Michel Platini. Laget vant EM i 1984 på hjemmebane, noe som var landets første store trofé. Denne perioden etablerte Frankrike som en seriøs fotballnasjon.
+<!-- På 1980-tallet fikk Frankrike sitt første store gjennombrudd, ledet av stjernespilleren Michel Platini. Laget vant EM i 1984 på hjemmebane, noe som var landets første store trofé. Denne perioden etablerte Frankrike som en seriøs fotballnasjon. -->
 
-Den største suksessen kom på slutten av 1990-tallet og begynnelsen av 2000-tallet. Med spillere som Zinedine Zidane, Thierry Henry og Didier Deschamps vant Frankrike VM i 1998 (på hjemmebane) og EM i 2000. 
-Dette laget regnes som et av de beste i fotballhistorien.
+<!-- Den største suksessen kom på slutten av 1990-tallet og begynnelsen av 2000-tallet. Med spillere som Zinedine Zidane, Thierry Henry og Didier Deschamps vant Frankrike VM i 1998 (på hjemmebane) og EM i 2000.  -->
+<!-- Dette laget regnes som et av de beste i fotballhistorien. -->
 
-Frankrike fortsatte å være en toppnasjon også senere. De nådde VM-finalen i 2006, og fikk en ny storhetstid med en ny generasjon spillere som Kylian Mbappé, Antoine Griezmann og Paul Pogba:  
-VM-gull i 2018 og VM-finale i 2022 (tap mot Argentina etter straffer).
+<!-- Frankrike fortsatte å være en toppnasjon også senere. De nådde VM-finalen i 2006, og fikk en ny storhetstid med en ny generasjon spillere som Kylian Mbappé, Antoine Griezmann og Paul Pogba:   -->
+<!-- VM-gull i 2018 og VM-finale i 2022 (tap mot Argentina etter straffer). -->
 
-I 2006 endte finalen med et rødt kort til Frankrike. Skjer det i kampen mot Norge?
+<!-- I 2006 endte finalen med et rødt kort til Frankrike. Skjer det i kampen mot Norge? -->
 
-```{r frankrike_kort}
+```{r frankrike_kort,include=FALSE}
 set.seed(48)
 alle_spm |> 
   filter(spm %in% c("Q21","Q22")) |> 
@@ -643,112 +871,4 @@ alle_spm |>
                      labels = c("Ingen","1","2","3","4","5","Flere"))
 ```
 
-
-
-## Topp og bunnlister
-
-Håper du har lært noe spennende om Norges motstander. Nå skal vi lære litt om
-hverandres motstand. Her er poenglistene:
-
-
-```{r leder}
-library(png)
-
-
-resultat <- alle_svar |> left_join(alle_spm,
-                       by = join_by(spm)) |> 
-  left_join(metadata |> select(id,autograf),
-            by = join_by(id)) |> 
-  # mutate(Poengfangst = poeng*(`Fasit 18.06.2026`==svar)) |> 
-  mutate(across(starts_with("Fasit"), ~poeng*(.==svar))) |> 
-  group_by(autograf) |> 
-  summarise(across(starts_with("Fasit"), ~ sum(.))) |>
-  select(autograf,
-         Poengfangst = last_col()) |> 
-  arrange(-Poengfangst)
-
-
-img_bra <- png::readPNG("bilder/ebh.png")
-img_grob_bra <- grid::rasterGrob(img_bra, interpolate = TRUE)
-
-
-img_daarlig <- png::readPNG("bilder/ebh_sint.png")
-img_grob_daarlig <- grid::rasterGrob(img_daarlig, interpolate = TRUE)
-
-
-
-resultat |> 
-  mutate(tekst = "Poengfangst") |> 
-  ggplot(aes(x=tekst))  +
-  theme_minimal() + theme(legend.position="none") +
-  annotation_custom(
-    grob = img_grob_bra,
-    xmin = 1,
-    # xmax = 1.5,
-    ymin = 13,
-    # ymax = 9
-  )+
-  annotation_custom(
-    grob = img_grob_daarlig,
-    xmin = -0.5,
-    # xmax = 1.5,
-    ymin = 5.0,
-    ymax = 10
-  )+
-  ggrepel::geom_label_repel(aes(y=Poengfangst,label = autograf, col=Poengfangst),
-                            size=3,label.padding = 0.15, force=3) +
-  xlab("") + ylab("") +
-  ggtitle("Antall poeng totalt")
-
-  
-
-
-  
-
-```
-
-Det er spennende i toppen. Neste figur viser utviklingen i plassering for topp 5.
-Noen klatrer og noen er stabile.
-```{r leder_utvikling, include=TRUE}
-
-
-resultat <- alle_svar |> left_join(alle_spm,
-                       by = join_by(spm)) |> 
-  left_join(metadata |> select(id,autograf),
-            by = join_by(id)) |> 
-  # mutate(Poengfangst = poeng*(`Fasit 18.06.2026`==svar)) |> 
-  mutate(across(starts_with("Fasit"), list(Poengfangst=~poeng*(.==svar)))) |> 
-  group_by(autograf) |> 
-  summarise(across(ends_with("Poengfangst"), ~ sum(.))) |>
-  mutate(across(ends_with("Poengfangst"), ~rank(-.)))  |> 
-  pivot_longer(ends_with("Poengfangst"), names_to = "Dato", values_to = "Plassering")  |> 
-  group_by(autograf) |> 
-  mutate(xakse = as.numeric(as.factor(Dato)),
-         Dato = lubridate::dmy(gsub("_Poengfangst","",gsub("Fasit ","",Dato))),
-         gruppe = case_when(tail(Plassering,1)<=5 ~ "Topp 5",
-                            tail(Plassering,1)>=15 ~ "Bunn 5",
-                            .default = "Middelhav")) |> 
-  filter(gruppe == "Topp 5")
-
-resultat |> 
-  ggplot(aes(x=Dato,y=Plassering,col=autograf)) +
-  geom_line() +
-  geom_point() +
-  scale_y_reverse() +
-  # geom_label(data=resultat |> filter(Dato==max(Dato)), aes(x=Dato,y=Plassering,label = autograf),size=3) +
-  ggrepel::geom_label_repel(data=resultat |> filter(Dato==max(Dato)),
-                            aes(y=Plassering,label = autograf),
-                            size=3,label.padding = 0.15, force=3) +
-  theme_minimal() + theme(legend.position="none") +
-  facet_grid(row=vars(gruppe)) +
-  ggtitle(label = "Utvikling i plassering for topp 5")
-
-
-
-```
-
-<!-- ## Poeng som gjenstår å spela om -->
-
-<!-- Her komme info om kor mange poeng folk har igjen å  få utdelt på spørsmålene som  -->
-<!-- ennå ikkje e delt ud. -->
 
