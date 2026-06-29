@@ -228,60 +228,74 @@ alle_svar <- smaaspoersmaal_svar |>
   pivot_longer(starts_with("Q"), names_to = "spm", values_to="svar") |> 
   replace_na(list(svar="Mangler svar"))
 
-alle_spm <- rbind(smaaspoersmaal_spm,
-                  irak_spm,
-                  senegal_spm,
-                  frankrike_spm,
-                  joker_spm,
-                  grupper_spm,
-                  naar_ryker_spm,
-                  finale_spm,
-                  avslutning_spm)
+alle_spm <- rbind(
+  smaaspoersmaal_spm,
+  irak_spm,
+  senegal_spm,
+  frankrike_spm,
+  joker_spm,
+  grupper_spm,
+  naar_ryker_spm,
+  finale_spm,
+  avslutning_spm
+)
 
-rm(list=c("avslutning", "avslutning_spm", "avslutning_svar", 
-          "finale", "finale_spm", "finale_svar", 
-          "frankrike", "frankrike_ind", "frankrike_poeng", "frankrike_spm", "frankrike_svar", 
-          "grupper", "grupper_spm", "grupper_svar", 
-          "irak", "irak_ind", "irak_poeng", "irak_spm", "irak_svar", 
-          "joker", "joker_ind", "joker_poeng", "joker_spm", "joker_svar", 
-          "meta_cols", "raw", 
-          "naar_ryker", "naar_ryker_spm", "naar_ryker_svar", 
-          "senegal", "senegal_ind", "senegal_poeng", "senegal_spm", "senegal_svar", 
-          "smaaspoersmaal", "smaaspoersmaal_ind", "smaaspoersmaal_poeng", "smaaspoersmaal_spm", "smaaspoersmaal_svar"))
+rm(list = c(
+  "avslutning", "avslutning_spm", "avslutning_svar",
+  "finale", "finale_spm", "finale_svar",
+  "frankrike", "frankrike_ind", "frankrike_poeng",
+  "frankrike_spm", "frankrike_svar",
+  "grupper", "grupper_spm", "grupper_svar",
+  "irak", "irak_ind", "irak_poeng", "irak_spm", "irak_svar",
+  "joker", "joker_ind", "joker_poeng", "joker_spm", "joker_svar",
+  "meta_cols", "raw",
+  "naar_ryker", "naar_ryker_spm", "naar_ryker_svar",
+  "senegal", "senegal_ind", "senegal_poeng", "senegal_spm", "senegal_svar",
+  "smaaspoersmaal", "smaaspoersmaal_ind", "smaaspoersmaal_poeng",
+  "smaaspoersmaal_spm", "smaaspoersmaal_svar"
+))
 
 
 
 #### Telle poeng ####
-alle_spm$tekst <- gsub("_"," ",alle_spm$tekst)
-alle_spm$tekst <- gsub(" riktig svar gir like mange poeng som norge far i gruppespillet","", alle_spm$tekst)
-alle_spm$tekst <- gsub(" riktig svar gir 5 poeng","", alle_spm$tekst)
-alle_spm$tekst <- gsub(" riktig svar gir 3 poeng","", alle_spm$tekst)
-alle_spm$tekst <- gsub(" riktig svar gir 2 poeng","", alle_spm$tekst)
+alle_spm$tekst <- gsub("_", " ", alle_spm$tekst)
+alle_spm$tekst <- gsub(
+  " riktig svar gir like mange poeng som norge far i gruppespillet",
+  "",
+  alle_spm$tekst
+)
+alle_spm$tekst <- gsub(" riktig svar gir 5 poeng", "", alle_spm$tekst)
+alle_spm$tekst <- gsub(" riktig svar gir 3 poeng", "", alle_spm$tekst)
+alle_spm$tekst <- gsub(" riktig svar gir 2 poeng", "", alle_spm$tekst)
 
 
-fasitsvar <- metadata |> 
-  filter(autograf == "Fasit") |> 
-  mutate(fasitdato = paste("Fasit",klubblaget_ditt)) |> 
-  select(id,fasitdato) 
+fasitsvar <- metadata |>
+  filter(autograf == "Fasit") |>
+  mutate(fasitdato = paste("Fasit", klubblaget_ditt)) |>
+  select(id, fasitdato)
 
 
-fasit <- alle_svar |> 
-  inner_join(fasitsvar, by = join_by(id)) |> 
-  select(-id) |> 
-  pivot_wider(names_from=fasitdato, values_from = svar)
+fasit <- alle_svar |>
+  inner_join(fasitsvar, by = join_by(id)) |>
+  select(-id) |>
+  pivot_wider(names_from = fasitdato, values_from = svar)
 
-alle_spm <- alle_spm |> 
+alle_spm <- alle_spm |>
   left_join(fasit,
-            by = join_by(spm)) |> 
+            by = join_by(spm)) |>
   distinct()
 
-alle_spm$poeng[alle_spm$spm=="Q30"] <- as.numeric(gsub(" poeng","",alle_spm$`Fasit 29.06.2026`[alle_spm$spm=="Q30"]))
+alle_spm$poeng[alle_spm$spm == "Q30"] <- as.numeric(gsub(
+  " poeng",
+  "",
+  alle_spm$`Fasit 29.06.2026`[alle_spm$spm == "Q30"]
+))
 
 
-alle_svar <- alle_svar |> 
+alle_svar <- alle_svar |>
   anti_join(fasitsvar,
             by = join_by(id))
 
-alle_svar$svar[alle_svar$spm == "Q46" & alle_svar$id==11] <- "Svarte ikke"
+alle_svar$svar[alle_svar$spm == "Q46" & alle_svar$id == 11] <- "Svarte ikke"
 
-rm(list=c("fasitsvar","fasit"))
+rm(list = c("fasitsvar", "fasit"))

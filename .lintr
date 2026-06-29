@@ -44,6 +44,7 @@ linters: linters_with_tags(
 encoding: "UTF-8"
 exclusions: list(
     # Disse filene/mappene lintes ikke
+    "docs",
     "renv",
     "tests/testthat.R",
     "tests/testthat/helper.r",
