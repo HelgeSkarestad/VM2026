@@ -47,7 +47,7 @@ pivot_wider(names_from=autograf, values_from=svar)
 
 spmtab |> left_join(svartab) |>
   mutate(spm = paste(spm,tekst)) |> 
-  select(-tekst) |> 
+  select(-tekst,-`Fasit 18.06.2026`,-`Fasit 24.06.2026`) |> 
   rename(Spørsmål = spm) |> 
   # arrange(spm) |> 
   flextable::flextable() |>
