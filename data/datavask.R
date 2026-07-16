@@ -7,9 +7,10 @@ library(janitor) # nolint: undesirable_function_linter.
 
 svar <- read_excel(here::here("data/260612-spmogsvar.xlsx")) |>  clean_names()
 
-fasit <- read_excel(here::here("data/260629-fasit.xlsx")) |>
+fasit <- read_excel(here::here("data/260716-fasit.xlsx")) |>
   clean_names() |>
-  mutate(autograf = "Fasit") |>
+  mutate(autograf = "Fasit",
+         id = id+25) |>
   filter(fullforingstidspunkt > lubridate::mdy("06172026"))
 
 fasit <- cbind(fasit[, 1:5],
@@ -164,7 +165,7 @@ grupper_spm <- raw |>
 
 
 grupper_svar <- grupper_spm |>
-  select(id, delspm, team) |>
+  distinct(id, delspm, team) |>
   pivot_wider(names_from = delspm, values_from = team)
 
 grupper_spm <- grupper_spm |>
