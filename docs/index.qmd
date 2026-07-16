@@ -14,7 +14,7 @@ execute:
 
 
 
-![](bilder/venner.png)
+![](bilder/vaskebj.png)
 
 
 Denne rapporten viser resultatene fra VM-tuppekunkurransen.
@@ -40,6 +40,7 @@ Her er pekere til tidligere versjoner av rapporten:
 
 <a href="frankrikekampen.html">Før Frankrike</a>
 
+<a href="elfenbenskystkampen.html">Før Elfenbenskysten</a>
 
 
 
@@ -49,7 +50,7 @@ Her er pekere til tidligere versjoner av rapporten:
 ## Datagrunnlag
 
 
-![](bilder/roing.jpg)
+![](bilder/spider.png)
 
 
 
@@ -265,15 +266,15 @@ resultat |>
     grob = img_grob_bra,
     xmin = 1,
     # xmax = 1.5,
-    ymin = 50,
+    ymin = 60,
     # ymax = 9
   )+
   annotation_custom(
     grob = img_grob_daarlig,
     xmin = -0.25,
     # xmax = 1.5,
-    ymin = 30,
-    ymax = 35
+    ymin = 45,
+    ymax = 50
   )+
   ggrepel::geom_label_repel(aes(y=Poengfangst,label = autograf, col=Poengfangst),
                             size=3,label.padding = 0.15, force=3) +
@@ -336,8 +337,8 @@ Figuren under viser poengene som er igjen å spille om. Her er det fremdeles god
   left_join(metadata |> select(id,autograf),
             by = join_by(id)) |> 
   # mutate(Poengfangst = poeng*(`Fasit 18.06.2026`==svar)) |> 
-  mutate(Poengfangst= poeng*(`Fasit 29.06.2026`==svar),
-         Potensielt = poeng*(`Fasit 29.06.2026`=="Mangler svar")) |> 
+  mutate(Poengfangst= poeng*(`Fasit 16.07.2026`==svar),
+         Potensielt = poeng*(`Fasit 16.07.2026`=="Mangler svar")) |> 
   group_by(autograf) |> 
   summarise(
     minimumsscore = sum(Poengfangst),
@@ -361,7 +362,71 @@ Figuren under viser poengene som er igjen å spille om. Her er det fremdeles god
 
 
 
-## Sluttspill
+## Finalen
+
+```{r finale_1}
+ft0 <- alle_spm |>
+  filter(`Fasit 16.07.2026` == "Mangler svar",
+         spm != "Q64",
+         spm != "Q50",
+         !(spm %in% c("Q43","Q45"))) |> 
+  select(spm, tekst) |> 
+  left_join(alle_svar, by = join_by(spm)) |> 
+  left_join(metadata |> select(id, autograf),by = join_by(id)) |> 
+  group_by(tekst, svar) |> 
+  summarise(autograf = paste0(autograf, collapse = ", ")) |> 
+  pivot_wider(names_from=svar, values_from=autograf)|> 
+  flextable::flextable() 
+ft0 <-  flextable::set_table_properties(ft0, layout = "autofit") |> 
+  flextable::font(fontname="Arial",part="all")
+ft0
+
+```
+
+
+```{r finale_2}
+ft0 <- alle_spm |>
+  filter(`Fasit 16.07.2026` == "Mangler svar",
+         spm == "Q64",
+         spm != "Q50",
+         !(spm %in% c("Q43","Q45"))) |> 
+  select(spm, tekst) |> 
+  left_join(alle_svar, by = join_by(spm)) |> 
+  left_join(metadata |> select(id, autograf),by = join_by(id)) |> 
+  group_by(tekst, svar) |> 
+  summarise(autograf = paste0(autograf, collapse = ", ")) |> 
+  pivot_wider(names_from=svar, values_from=autograf)|> 
+  flextable::flextable() 
+ft0 <-  flextable::set_table_properties(ft0, layout = "autofit") |> 
+  flextable::font(fontname="Arial",part="all")
+ft0
+
+```
+
+
+
+```{r finale_3}
+ft0 <- alle_spm |>
+  filter(`Fasit 16.07.2026` == "Mangler svar",
+         spm != "Q64",
+         spm == "Q50",
+         !(spm %in% c("Q43","Q45"))) |> 
+  select(spm, tekst) |> 
+  left_join(alle_svar, by = join_by(spm)) |> 
+  left_join(metadata |> select(id, autograf),by = join_by(id)) |> 
+  group_by(tekst, svar) |> 
+  summarise(autograf = paste0(autograf, collapse = ", ")) |> 
+  pivot_wider(names_from=svar, values_from=autograf)|> 
+  flextable::flextable() 
+ft0 <-  flextable::set_table_properties(ft0, layout = "autofit") |> 
+  flextable::font(fontname="Arial",part="all")
+ft0
+
+```
+
+
+![](bilder/kongen.png)
+
 
 ```{r innledning_prepp, include=FALSE}
 interessante_spm <- alle_spm |> 
@@ -396,7 +461,8 @@ like_svar <- tibble(spm = c("Q44","Q46"))
 
 ```
 
-```{r naar_ryker}
+
+```{r naar_ryker, include=FALSE}
 
 ft0 <- alle_spm |> 
   filter(spm %in% paste0("Q",c(43:49))) |> 
@@ -408,13 +474,13 @@ ft0 <- alle_spm |>
   summarise(hvem = paste0(autograf, collapse=", ")) |> 
   pivot_wider(names_from=svar, values_from=hvem) |> 
   select(Spørsmål = tekst,
-         Gruppespill,
-         `16-delsfinale`,
+         # Gruppespill,
+         # `16-delsfinale`,
          # `8-delsfinale`,
-         # Kvartfinale,
-         # Semifinale,
-         # Finale,
-         # Vinner
+         Kvartfinale,
+         Semifinale,
+         Finale,
+         Vinner
          ) |> 
   flextable::flextable()
 
