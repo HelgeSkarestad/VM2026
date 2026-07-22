@@ -21,7 +21,6 @@ Denne rapporten viser resultatene fra VM-tuppekunkurransen.
 Utrolig avansert analyse er anvendt for å tolke innsendte tippelapper. 
 Analysene tyter ut i figurer og tabeller i det følgende notatet. Si gjerne
 fra om du har forslag til analyser eller ser feil i dataene.
-Oppdaterte analyser kommer etter Irak-Norge.
 
 God lesning!
 
@@ -42,11 +41,12 @@ Her er pekere til tidligere versjoner av rapporten:
 
 <a href="elfenbenskystkampen.html">Før Elfenbenskysten</a>
 
+<a href="finalen.html">Før finalen</a>
 
 
 
 
-
+<!--
 ## Datagrunnlag
 
 
@@ -58,6 +58,7 @@ Her kommer det sylskarpe analyser av svarene som er sendt inn.
 Analysene handler mest om å sette opp foreløpig stilling i tippekonkurransen,
 holde motet oppe for de som ikke har fått så mange rett foreløpig og å la de som
 har tippet ulikt få vite det. Den siste kan kanskje generere små bets foran TV-skjermen?
+-->
 
 ```{r dataprep}
 library(ggplot2)
@@ -166,14 +167,15 @@ metainfo |>
 
 ```
 
-
+<!--
 Vi har fått inn `r nrow(metainfo)` svar. 
 Figuren viser hvor lang tid respondenten har brukt på utfylling og når på døgnet 
 dette er gjort. På grunn av at en person har brukt veldig over 100 minutter i arbeidstid,
 så er x-aksen på logaritmisk skala. Noen fylte også ut etter leggetid. Husk ordtaket 
 om at når munnteip er på, unngå skjermlys blå.
+-->
 
-```{r tid_naar, include=TRUE}
+```{r tid_naar, include=FALSE}
 metainfo |> 
   ggplot(aes(x=Tidsbruk,y=`Utfylt klokkeslett`, col=`Utfylt tidspunkt`)) +
   # geom_label(aes(y=`Utfylt klokkeslett`,label=autograf, col=`Utfylt tidspunkt`),
@@ -195,7 +197,7 @@ metainfo |>
 poengfangst til nå. Noen har brukt mye tid til å skaffe veldig få poeng.
 Andre har brukt lite tid til å skaffe mange poeng.-->
 
-```{r tid_poeng, include=TRUE}
+```{r tid_poeng, include=FALSE}
 
 
 resultat <- alle_svar |> left_join(alle_spm,
@@ -227,10 +229,8 @@ metainfo |>
 
 
 
-## Topp og bunnlister
-
-Her er poenglistene:
-
+## Vinner:
+Gratulerer til vinneren som parkerte nestemann på listen!
 
 ```{r leder}
 library(png)
@@ -266,30 +266,25 @@ resultat |>
     grob = img_grob_bra,
     xmin = 1,
     # xmax = 1.5,
-    ymin = 60,
+    ymin = 90,
     # ymax = 9
   )+
   annotation_custom(
     grob = img_grob_daarlig,
     xmin = -0.25,
     # xmax = 1.5,
-    ymin = 45,
-    ymax = 50
+    ymin = 65,
+    ymax = 70
   )+
   ggrepel::geom_label_repel(aes(y=Poengfangst,label = autograf, col=Poengfangst),
                             size=3,label.padding = 0.15, force=3) +
   xlab("") + ylab("") +
   ggtitle("Antall poeng totalt")
 
-  
-
-
-  
-
 ```
 
-Det er spennende i toppen. Neste figur viser utviklingen i plassering for topp 5.
-Noen klatrer og noen er stabile.
+
+Neste figur viser utviklingen i plassering for topp 5.
 ```{r leder_utvikling, include=TRUE}
 
 
@@ -327,22 +322,22 @@ resultat |>
 
 
 ```
-
+<!--
 Figuren under viser poengene som er igjen å spille om. Her er det fremdeles gode muligheter!
+-->
 
-
-```{r gjenstaar}
+```{r gjenstaar,include=FALSE}
  alle_svar |> left_join(alle_spm,
                        by = join_by(spm)) |> 
   left_join(metadata |> select(id,autograf),
             by = join_by(id)) |> 
   # mutate(Poengfangst = poeng*(`Fasit 18.06.2026`==svar)) |> 
-  mutate(Poengfangst= poeng*(`Fasit 16.07.2026`==svar),
-         Potensielt = poeng*(`Fasit 16.07.2026`=="Mangler svar")) |> 
+  mutate(Poengfangst= poeng*(`Fasit 20.07.2026`==svar),
+         Potensielt = poeng*(`Fasit 20.07.2026`=="Mangler svar")) |> 
   group_by(autograf) |> 
   summarise(
     minimumsscore = sum(Poengfangst),
-    `Mulig poengfangst` = minimumsscore + sum(Potensielt)) |> 
+    `Mulig poengfangst` = minimumsscore + pmax(0.1,sum(Potensielt))) |> 
   arrange(desc(minimumsscore)) |> 
   mutate(`Dagens plassering` = seq(1,19)) |> 
   ggplot(aes()) +
@@ -353,7 +348,6 @@ Figuren under viser poengene som er igjen å spille om. Her er det fremdeles god
       ymax = `Dagens plassering` + 0.35),
       fill="steelblue") +
     scale_y_reverse() +
-
   geom_text(aes(x=`Mulig poengfangst`, y = `Dagens plassering`,label = autograf),size = 3,hjust=1,col="white") +
   theme_minimal()
 
@@ -361,22 +355,52 @@ Figuren under viser poengene som er igjen å spille om. Her er det fremdeles god
 ```
 
 
-
-## Finalen
+Hvordan kunne dette skje?
+Under vises poengtildelingen fra finalen for de som er topp fem.
 
 ```{r finale_1}
-ft0 <- alle_spm |>
+
+toppfem <- alle_svar |> left_join(alle_spm,
+                       by = join_by(spm)) |> 
+  left_join(metadata |> select(id,autograf),
+            by = join_by(id)) |> 
+  # mutate(Poengfangst = poeng*(`Fasit 18.06.2026`==svar)) |> 
+  mutate(across(starts_with("Fasit"), list(Poengfangst=~poeng*(.==svar)))) |> 
+  group_by(autograf) |> 
+  summarise(across(ends_with("Poengfangst"), ~ sum(.))) |>
+  mutate(across(ends_with("Poengfangst"), ~rank(-.)))  |> 
+  pivot_longer(ends_with("Poengfangst"), names_to = "Dato", values_to = "Plassering")  |> 
+  group_by(autograf) |> 
+  mutate(xakse = as.numeric(as.factor(Dato)),
+         Dato = lubridate::dmy(gsub("_Poengfangst","",gsub("Fasit ","",Dato))),
+         gruppe = case_when(tail(Plassering,1)<6 ~ "Topp 5",
+                            tail(Plassering,1)>=15 ~ "Bunn 5",
+                            .default = "Middelhav")) |> 
+  filter(gruppe == "Topp 5",
+         Dato == lubridate::mdy("07-20-2026")
+         ) |>
+  mutate(autograf_sortert = paste0(floor(Plassering),". ",autograf)) |> 
+  distinct(autograf_sortert,autograf)
+
+
+
+ft0 <- alle_svar |> left_join(alle_spm,
+                       by = join_by(spm)) |> 
+  left_join(metadata |> select(id,autograf),
+            by = join_by(id)) |> 
+  mutate(Poengfangst = poeng*(`Fasit 20.07.2026`==svar),
+         tekst = paste0(tekst," (",`Fasit 20.07.2026`,")"))|>
   filter(`Fasit 16.07.2026` == "Mangler svar",
-         spm != "Q64",
-         spm != "Q50",
-         !(spm %in% c("Q43","Q45"))) |> 
-  select(spm, tekst) |> 
-  left_join(alle_svar, by = join_by(spm)) |> 
-  left_join(metadata |> select(id, autograf),by = join_by(id)) |> 
-  group_by(tekst, svar) |> 
-  summarise(autograf = paste0(autograf, collapse = ", ")) |> 
-  pivot_wider(names_from=svar, values_from=autograf)|> 
+         # spm != "Q64",
+         # spm != "Q50",
+         !(spm %in% c("Q43","Q45"))
+         ) |> 
+  inner_join(toppfem, by = join_by(autograf)) |> 
+  select(tekst,Poengfangst,autograf_sortert) |> 
+  arrange(autograf_sortert) |> 
+  pivot_wider(names_from=autograf_sortert, values_from = Poengfangst)|> 
   flextable::flextable() 
+
 ft0 <-  flextable::set_table_properties(ft0, layout = "autofit") |> 
   flextable::font(fontname="Arial",part="all")
 ft0
@@ -384,7 +408,10 @@ ft0
 ```
 
 
-```{r finale_2}
+
+
+
+```{r finale_2, include=FALSE}
 ft0 <- alle_spm |>
   filter(`Fasit 16.07.2026` == "Mangler svar",
          spm == "Q64",
@@ -405,7 +432,7 @@ ft0
 
 
 
-```{r finale_3}
+```{r finale_3, include=FALSE}
 ft0 <- alle_spm |>
   filter(`Fasit 16.07.2026` == "Mangler svar",
          spm != "Q64",
@@ -424,6 +451,9 @@ ft0
 
 ```
 
+Eivind kontakter vinneren for utlevering av premien samt vipps-krav til alle andre for å betale premien. 
+
+Takk for god innsats og velkommen tilbake neste gang.
 
 ![](bilder/kongen.png)
 
@@ -579,8 +609,8 @@ alle_spm |>
 
 ```
 
-
-## Retrospektiv av gruppespill
+<!--
+# Retrospektiv av gruppespill
 Grupperinger er en grunnleggende måte mennesker organiserer verden på. Vi deler
 inn objekter, fenomener og mennesker i grupper for å skape oversikt, forstå 
 sammenhenger og gjøre kommunikasjon enklere. Slike inndelinger finnes i mange 
@@ -590,10 +620,10 @@ Kort sagt er grupperinger et universelt verktøy for å skape orden i kompleksit
 De gjør det mulig å se mønstre, trekke konklusjoner og kommunisere på en
 effektiv måte, enten det gjelder dagligdagse valg eller avansert faglig arbeid.
 
-Under følger hvem som alle rette svar i hver gruppe
+Under følger hvem som alle rette svar i hver gruppe-->
 
 
-```{r gruppevinner, include=TRUE}
+```{r gruppevinner, include=FALSE}
 gruppesvar <- alle_spm |> 
   distinct() |> 
   # filter(spm %in% paste0("Q",seq(31.0,31.4,0.1))) |>
@@ -624,8 +654,8 @@ ft1
 
 ```
 
-Videre følger en oversikt over de som hadde ALT feil.
-```{r gruppetaper, include=TRUE}
+<!--Videre følger en oversikt over de som hadde ALT feil.-->
+```{r gruppetaper, include=FALSE}
 gruppesvar <- alle_spm |> 
   distinct() |> 
   # filter(spm %in% paste0("Q",seq(31.0,31.4,0.1))) |>
