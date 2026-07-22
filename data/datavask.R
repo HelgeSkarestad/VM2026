@@ -7,14 +7,14 @@ library(janitor) # nolint: undesirable_function_linter.
 
 svar <- read_excel(here::here("data/260612-spmogsvar.xlsx")) |>  clean_names()
 
-fasit <- read_excel(here::here("data/260716-fasit.xlsx")) |>
+fasit <- read_excel(here::here("data/260722-fasit.xlsx")) |>
   clean_names() |>
   mutate(autograf = "Fasit",
          id = id+25) |>
   filter(fullforingstidspunkt > lubridate::mdy("06172026"))
 
 fasit <- cbind(fasit[, 1:5],
-               tibble(tidspunkt_for_siste_endring = fasit$fullforingstidspunkt),
+               # tibble(tidspunkt_for_siste_endring = fasit$fullforingstidspunkt),
                fasit[, 6:ncol(fasit)])
 colnames(fasit) <- colnames(svar)
 
